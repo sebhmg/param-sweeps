@@ -1,0 +1,15 @@
+{
+  "title": "Parameter sweep",
+  "run_command": "SweepDriver.run",
+  "conda_environment": "sweeps",
+  "monitoring_directory": "",
+  "workspace_geoh5": "",
+  "geoh5": "",
+  "worker_uijson": {
+    "main": true,
+    "fileDescription": ["Driver parameterization"],
+    "fileType": ["ui.json"],
+    "label": "Worker ui.json file",
+    "value": ""
+  }
+}

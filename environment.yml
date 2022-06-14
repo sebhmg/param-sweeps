@@ -1,0 +1,11 @@
+name: sweeps
+channels:
+dependencies:
+  - python=3.9
+  - pip
+  - git
+  - numpy
+  - h5py
+  - pip:
+    - git+https://github.com/MiraGeoscience/geoh5py.git@release/0.3.0
+
