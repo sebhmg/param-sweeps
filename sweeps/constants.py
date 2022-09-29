@@ -1,6 +1,6 @@
 defaults = {
     "title": "Parameter sweep",
-    "run_command": "SweepDriver.run",
+    "run_command": "sweeps.driver",
     "conda_environment": "sweeps",
     "monitoring_directory": None,
     "workspace_geoh5": None,

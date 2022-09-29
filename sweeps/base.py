@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import Any
 from uuid import UUID
 
-from geoh5py.io.utils import str2uuid, uuid2entity
+from geoh5py.shared.utils import str2uuid, uuid2entity
 from geoh5py.ui_json import InputFile, InputValidation, utils
 from geoh5py.workspace import Workspace
 
@@ -103,7 +103,6 @@ class BaseParams:
         if "geoh5" in params_dict.keys():
             if params_dict["geoh5"] is not None:
                 setattr(self, "geoh5", params_dict["geoh5"])
-                self.input_file.workspace = params_dict["geoh5"]
 
         params_dict = self.input_file._promote(params_dict)
         for key, value in params_dict.items():
@@ -236,7 +235,8 @@ class BaseParams:
         self.setter_validator(
             "geoh5", val, fun=lambda x: Workspace(x) if isinstance(val, str) else x
         )
-        self.input_file.workspace = self.geoh5
+        if self.input_file.workspace is None:
+            self.input_file.workspace = self.geoh5
 
     @property
     def run_command(self):
