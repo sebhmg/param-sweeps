@@ -48,16 +48,6 @@ class SweepParams(BaseParams):
     def worker_geoh5(self, val):
         self._worker_geoh5 = Workspace(val) if isinstance(val, str) else val
 
-    @property
-    def result_object(self):
-        val = self._result_object
-        ws = Workspace(self.worker_uijson)
-        return ws.get_entity(self.result_name) if val is None else val
-
-    @result_object.setter
-    def result_object(self, val):
-        self._result_object = val
-
     def worker_parameters(self):
         return [k.replace("_start", "") for k in self.__dict__ if k.endswith("_start")]
 

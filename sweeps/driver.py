@@ -24,10 +24,15 @@ class SweepDriver:
     def __init__(self, params):
         self.params = params
 
+    @staticmethod
+    def uuid_from_params(params):
+        """Create a deterministic uuid"""
+        return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(iter))))
+
     def run(self):
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
-        ifile.workspace.open(mode='r')
+        workspace = ifile.workspace.open(mode='r')
         sets = self.params.parameter_sets()
         iterations = list(itertools.product(*sets.values()))
         print(f"Running parameter sweep for {len(iterations)} trials of the {ifile.data['title']} driver.")
@@ -36,8 +41,8 @@ class SweepDriver:
         count = 0
         for iter in iterations:
             count += 1
-            root_dir = os.path.dirname(ifile.workspace.h5file)
-            root_name = os.path.basename(ifile.workspace.h5file).split('.')[0]
+            root_dir = os.path.dirname(workspace.h5file)
+            _ = os.path.basename(workspace.h5file).split('.')[0]
             param_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(iter))))
             filepath = os.path.join(root_dir, f"{param_uuid}.ui.geoh5")
             param_lookup[param_uuid] = dict(zip(sets.keys(), iter))
@@ -54,9 +59,6 @@ class SweepDriver:
                     for o in objs:
                         if not isinstance(o, Data):
                             o.copy(parent=ws, copy_children=True)
-
-
-
 
                 if os.path.exists(lookup_path):
                     with open(lookup_path, 'r') as f:
@@ -76,8 +78,7 @@ class SweepDriver:
                     "python", "-m", run_cmd, ifile.path_name
                 ])
 
-
-
+        workspace.close()
 
 def sweep_forms(param, value):
     group = param.replace('_', ' ').capitalize()
@@ -128,10 +129,13 @@ def generate(file, parameters=None):
 
     sweepfile.data["geoh5"] = ifile.data["geoh5"]
     sweepfile.data["worker_uijson"] = os.path.abspath(file)
-    # sweepfile.data["result_name"] = ifile.data.get("out_group", None)
+    dirname = os.path.dirname(ifile.data["geoh5"].h5file)
+    filename = os.path.basename(ifile.data["geoh5"].h5file)
+    filename = filename.replace(".ui", "")
+    filename = filename.replace(".geoh5", "_sweep.ui.json")
     sweepfile.write_ui_json(
-        name=os.path.basename(ifile.data["geoh5"].h5file).replace(".ui.geoh5", "_sweep.ui.json"),
-        path=os.path.dirname(ifile.data["geoh5"].h5file)
+        name=filename,
+        path=dirname
     )
 
 
