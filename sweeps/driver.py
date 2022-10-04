@@ -12,11 +12,13 @@ import subprocess
 import uuid
 import json
 
+from copy import deepcopy
 from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
 from geoh5py.data import Data
 from geoh5py.shared.exceptions import BaseValidationError
 from sweeps.params import SweepParams
+from sweeps.constants import default_ui_json
 
 
 class SweepDriver:
@@ -25,9 +27,9 @@ class SweepDriver:
         self.params = params
 
     @staticmethod
-    def uuid_from_params(params):
-        """Create a deterministic uuid"""
-        return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(iter))))
+    def uuid_from_params(params: tuple):
+        """Create a deterministic uuid."""
+        return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(params))))
 
     def run(self):
 
@@ -43,7 +45,7 @@ class SweepDriver:
             count += 1
             root_dir = os.path.dirname(workspace.h5file)
             _ = os.path.basename(workspace.h5file).split('.')[0]
-            param_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(iter))))
+            param_uuid = SweepDriver.uuid_from_params(iter)
             filepath = os.path.join(root_dir, f"{param_uuid}.ui.geoh5")
             param_lookup[param_uuid] = dict(zip(sets.keys(), iter))
             lookup_path = os.path.join(root_dir, "lookup.json")
@@ -114,10 +116,14 @@ def generate(file, parameters=None):
     """Generate a ui.json file to sweep parameter in 'file' driver."""
 
     ifile = InputFile.read_ui_json(file)
-    sweepfile = InputFile.read_ui_json(
-        os.path.join(os.path.dirname(__file__), "template.ui.json"),
+    sweepfile = InputFile(
+        ui_json = deepcopy(default_ui_json),
         validation_options={"disabled": True}
     )
+    # sweepfile = InputFile.read_ui_json(
+    #     os.path.join(os.path.dirname(__file__), "template.ui.json"),
+    #     validation_options={"disabled": True}
+    # )
     for k, v in ifile.data.items():
 
         if parameters is not None and k not in parameters:
@@ -128,7 +134,6 @@ def generate(file, parameters=None):
             sweepfile.ui_json.update(forms)
 
     sweepfile.data["geoh5"] = ifile.data["geoh5"]
-    sweepfile.data["worker_uijson"] = os.path.abspath(file)
     dirname = os.path.dirname(ifile.data["geoh5"].h5file)
     filename = os.path.basename(ifile.data["geoh5"].h5file)
     filename = filename.replace(".ui", "")

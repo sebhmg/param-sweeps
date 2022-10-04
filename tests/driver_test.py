@@ -7,11 +7,32 @@
 
 import os
 import json
+import itertools
 from copy import deepcopy
 
 from geoh5py.workspace import Workspace
-from sweeps.driver import generate
+from sweeps.driver import SweepDriver, sweep_forms, generate
 from sweeps.constants import default_ui_json
+
+def test_uuid_from_params():
+    test = {"a": [1, 2], "b": [3, 4], "c": [5, 6]}
+    iterations = list(itertools.product(*test.values()))
+    for iter in iterations:
+        trial_uuid = SweepDriver.uuid_from_params(iter)
+        assert trial_uuid == SweepDriver.uuid_from_params(iter), "method is not deterministic"
+
+def test_sweep_forms():
+    forms = sweep_forms("test", 1)
+    params = ["test_start", "test_end", "test_n"]
+    assert len(forms) == 3
+    assert all([k in forms for k in params])
+    assert all([forms[k]["group"] == "Test" for k in params])
+    assert all([f["value"] == 1 for f in forms.values()])
+    assert forms["test_end"]["optional"]
+    assert not forms["test_end"]["enabled"]
+    assert forms["test_n"]["dependency"] == "test_end"
+    assert forms["test_n"]["dependencyType"] == "enabled"
+    assert not forms["test_n"]["enabled"]
 
 def test_generate(tmp_path):
     ws = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
