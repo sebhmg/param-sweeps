@@ -37,16 +37,23 @@ class SweepParams(BaseParams):
 
     @worker_uijson.setter
     def worker_uijson(self, val):
-        self.worker_geoh5 = val.replace("ui.json", "ui.geoh5")
         self._worker_uijson = val
 
     @property
-    def worker_geoh5(self):
-        return self._worker_geoh5
+    def geoh5(self):
+        return self._geoh5
 
-    @worker_geoh5.setter
-    def worker_geoh5(self, val):
-        self._worker_geoh5 = Workspace(val) if isinstance(val, str) else val
+    @geoh5.setter
+    def geoh5(self, val):
+        if val is None:
+            self._geoh5 = val
+            return
+        self.setter_validator(
+            "geoh5", val, fun=lambda x: Workspace(x) if isinstance(val, str) else x
+        )
+        self.worker_uijson = val.h5file.replace(".ui.geoh5", ".ui.json")
+        if self.input_file.workspace is None:
+            self.input_file.workspace = self.geoh5
 
     def worker_parameters(self):
         return [k.replace("_start", "") for k in self.__dict__ if k.endswith("_start")]
