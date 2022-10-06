@@ -66,7 +66,6 @@ def test_sweep_forms():
     assert not forms["test_n"]["enabled"]
 
 
-@pytest.mark.filterwarnings("ignore:set_enabled")
 def test_generate(tmp_path):
     ws = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
 
