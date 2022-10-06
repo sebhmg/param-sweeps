@@ -10,12 +10,12 @@ import json
 import os
 from copy import deepcopy
 
-import pytest
 from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
 
 from sweeps.constants import default_ui_json
-from sweeps.driver import SweepDriver, SweepParams, generate, sweep_forms
+from sweeps.driver import (SweepDriver, SweepParams, generate, sweep_forms,
+                           update_lookup)
 
 
 def test_params(tmp_path):
@@ -40,6 +40,17 @@ def test_params(tmp_path):
     assert len(psets) == 1
     assert "param1" in psets
     assert psets["param1"] == [1, 2]
+
+
+def test_update_lookup(tmp_path):
+    workspace = Workspace(os.path.join(tmp_path, "test.geoh5"))
+    test = {"first entry": {"param1": 2, "param2": 1}}
+    with open(os.path.join(tmp_path, "lookup.json"), "w", encoding="utf-8") as file:
+        json.dump(test, file, ensure_ascii=False, indent=4)
+
+    lookup = {"second entry": {"param1": 1, "param2": 2}}
+    new_lookup = update_lookup(lookup, workspace)
+    assert new_lookup == dict(test, **lookup)
 
 
 def test_uuid_from_params():
