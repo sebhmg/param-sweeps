@@ -5,15 +5,18 @@
 #  param-sweeps is distributed under the terms and conditions of the MIT License
 #  (see LICENSE file at the root of this source code package).
 
-import os
-import json
 import itertools
+import json
+import os
 from copy import deepcopy
 
-from geoh5py.workspace import Workspace
+import pytest
 from geoh5py.ui_json import InputFile
-from sweeps.driver import SweepParams, SweepDriver, sweep_forms, generate
+from geoh5py.workspace import Workspace
+
 from sweeps.constants import default_ui_json
+from sweeps.driver import SweepDriver, SweepParams, generate, sweep_forms
+
 
 def test_params(tmp_path):
     ws = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
@@ -21,18 +24,9 @@ def test_params(tmp_path):
     test.update(
         {
             "geoh5": ws.h5file,
-            "param1_start": {
-                "label": "param1 start",
-                "value": 1
-            },
-            "param1_end": {
-                "label": "param1 end",
-                "value": 2
-            },
-            "param1_n": {
-                "label": "param1 n samples",
-                "value": 2
-            },
+            "param1_start": {"label": "param1 start", "value": 1},
+            "param1_end": {"label": "param1 end", "value": 2},
+            "param1_n": {"label": "param1 n samples", "value": 2},
         }
     )
     ifile = InputFile(ui_json=test)
@@ -53,7 +47,10 @@ def test_uuid_from_params():
     iterations = list(itertools.product(*test.values()))
     for iter in iterations:
         trial_uuid = SweepDriver.uuid_from_params(iter)
-        assert trial_uuid == SweepDriver.uuid_from_params(iter), "method is not deterministic"
+        assert trial_uuid == SweepDriver.uuid_from_params(
+            iter
+        ), "method is not deterministic"
+
 
 def test_sweep_forms():
     forms = sweep_forms("test", 1)
@@ -68,6 +65,8 @@ def test_sweep_forms():
     assert forms["test_n"]["dependencyType"] == "enabled"
     assert not forms["test_n"]["enabled"]
 
+
+@pytest.mark.filterwarnings("ignore:set_enabled")
 def test_generate(tmp_path):
     ws = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
 
@@ -75,23 +74,17 @@ def test_generate(tmp_path):
     test.update(
         {
             "geoh5": ws.h5file,
-            "param1": {
-                "label": "param1",
-                "value": 1
-            },
-            "param2": {
-                "label": "param2",
-                "value": 2.5
-            }
+            "param1": {"label": "param1", "value": 1},
+            "param2": {"label": "param2", "value": 2.5},
         }
     )
 
     path = os.path.join(tmp_path, "worker.ui.json")
-    with open(path, 'w', encoding="utf8") as f:
+    with open(path, "w", encoding="utf8") as f:
         json.dump(test, f, indent=4)
 
     generate(path)
-    with open(path.replace(".ui.json", "_sweep.ui.json"), 'r') as f:
+    with open(path.replace(".ui.json", "_sweep.ui.json")) as f:
         data = json.load(f)
 
     assert "param1_start" in data
@@ -110,7 +103,7 @@ def test_generate(tmp_path):
 
     generate(path, parameters=["param1"])
 
-    with open(path.replace(".ui.json", "_sweep.ui.json"), 'r') as f:
+    with open(path.replace(".ui.json", "_sweep.ui.json")) as f:
         data = json.load(f)
 
     assert "param2_start" not in data
