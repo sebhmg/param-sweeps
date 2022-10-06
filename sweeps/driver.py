@@ -5,33 +5,94 @@
 #  param-sweeps is distributed under the terms and conditions of the MIT License
 #  (see LICENSE file at the root of this source code package).
 
+from __future__ import annotations
+
 import os
 import argparse
 import itertools
 import subprocess
 import uuid
 import json
+import numpy as np
 
 from copy import deepcopy
+from inspect import signature
+from dataclasses import dataclass
 from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
 from geoh5py.data import Data
 from geoh5py.shared.exceptions import BaseValidationError
-from sweeps.params import SweepParams
 from sweeps.constants import default_ui_json
+
+@dataclass
+class SweepParams:
+    """Parameterizes a sweep of the worker driver."""
+
+    title: str = "Parameter sweep"
+    run_command: str = "sweeps.driver"
+    conda_environment: str = "sweeps"
+    monitoring_directory: str = None
+    workspace_geoh5: Workspace = None
+    geoh5: Workspace = None
+    _worker_uijson: str = None
+
+    @classmethod
+    def from_input_file(cls, ifile: InputFile):
+        """Instantiate params class with contents of input file data."""
+
+        cls_fields = [field for field in signature(cls).parameters]
+        base_params, app_params = {}, {}
+
+        for k, v in ifile.data.items():
+            if k in cls_fields:
+                base_params[k] = v
+            else:
+                app_params[k] = v
+
+        val = cls(**base_params)
+        for k, v in app_params.items():
+            setattr(val, k, v)
+
+        return val
+
+    @property
+    def worker_uijson(self):
+        if self._worker_uijson is None:
+            self._worker_uijson = self.geoh5.h5file.replace("_sweep", "")
+            self._worker_uijson = self._worker_uijson.replace(".ui.geoh5", ".ui.json")
+        return self._worker_uijson
+
+    def worker_parameters(self) -> List[str]:
+        """Return all sweep parameter names."""
+        return [k.replace("_start", "") for k in self.__dict__ if k.endswith("_start")]
+
+    def parameter_sets(self) -> dict[str, list[int | float]]:
+        """Return sets of parameter values that will be combined to form the sweep."""
+        names = self.worker_parameters()
+        sets = {n: (getattr(self, f"{n}_start"), getattr(self, f"{n}_end"), getattr(self, f"{n}_n")) for n in names}
+        sets = {k: [v[0]] if v[1] is None else np.linspace(*v, dtype=int).tolist() for k, v in sets.items()}
+        return sets
 
 
 class SweepDriver:
+    """Sweeps parameters of a worker driver."""
 
     def __init__(self, params):
-        self.params = params
+        self.params: SweepParams = params
 
     @staticmethod
-    def uuid_from_params(params: tuple):
-        """Create a deterministic uuid."""
+    def uuid_from_params(params: tuple) -> str:
+        """
+        Create a deterministic uuid.
+
+        :param params: Tuple containing the values of a sweep iteration.
+
+        :returns: Unique but recoverable uuid file identifier string.
+        """
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(params))))
 
     def run(self):
+        """Execute a sweep."""
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
         workspace = ifile.workspace.open(mode='r')
@@ -82,7 +143,13 @@ class SweepDriver:
 
         workspace.close()
 
-def sweep_forms(param, value):
+def sweep_forms(param: str, value: int | float) -> dict:
+    """
+    Return a set of three ui.json entries for start, end and n (samples).
+
+    :param param: Parameter name
+    :param value: Parameter value
+    """
     group = param.replace('_', ' ').capitalize()
     forms = {
         f"{param}_start": {
@@ -112,18 +179,20 @@ def sweep_forms(param, value):
 
     return forms
 
-def generate(file, parameters=None):
-    """Generate a ui.json file to sweep parameter in 'file' driver."""
+def generate(file: str, parameters: List[str] = None):
+    """
+    Generate an *_sweep.ui.json file to sweep parameters of the driver associated with 'file'.
+
+    :param file: Name of .ui.json file
+    :param parameters: Parameters to include in the _sweep.ui.json file
+    """
 
     ifile = InputFile.read_ui_json(file)
     sweepfile = InputFile(
         ui_json = deepcopy(default_ui_json),
         validation_options={"disabled": True}
     )
-    # sweepfile = InputFile.read_ui_json(
-    #     os.path.join(os.path.dirname(__file__), "template.ui.json"),
-    #     validation_options={"disabled": True}
-    # )
+
     for k, v in ifile.data.items():
 
         if parameters is not None and k not in parameters:
@@ -142,7 +211,6 @@ def generate(file, parameters=None):
         name=filename,
         path=dirname
     )
-
 
 
 if __name__ == "__main__":
@@ -179,5 +247,5 @@ if __name__ == "__main__":
         if "_sweep" not in filepath:
             filepath = filepath.replace(".ui.json", "_sweep.ui.json")
         ifile = InputFile.read_ui_json(filepath)
-        params = SweepParams(ifile)
+        params = SweepParams.from_input_file(ifile)
         SweepDriver(params).run()

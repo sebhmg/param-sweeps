@@ -11,8 +11,42 @@ import itertools
 from copy import deepcopy
 
 from geoh5py.workspace import Workspace
-from sweeps.driver import SweepDriver, sweep_forms, generate
+from geoh5py.ui_json import InputFile
+from sweeps.driver import SweepParams, SweepDriver, sweep_forms, generate
 from sweeps.constants import default_ui_json
+
+def test_params(tmp_path):
+    ws = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
+    test = deepcopy(default_ui_json)
+    test.update(
+        {
+            "geoh5": ws.h5file,
+            "param1_start": {
+                "label": "param1 start",
+                "value": 1
+            },
+            "param1_end": {
+                "label": "param1 end",
+                "value": 2
+            },
+            "param1_n": {
+                "label": "param1 n samples",
+                "value": 2
+            },
+        }
+    )
+    ifile = InputFile(ui_json=test)
+    params = SweepParams.from_input_file(ifile)
+
+    assert os.path.split(params.worker_uijson)[-1] == "worker.ui.json"
+    worker_params = params.worker_parameters()
+    assert len(worker_params) == 1
+    assert worker_params[0] == "param1"
+    psets = params.parameter_sets()
+    assert len(psets) == 1
+    assert "param1" in psets
+    assert psets["param1"] == [1, 2]
+
 
 def test_uuid_from_params():
     test = {"a": [1, 2], "b": [3, 4], "c": [5, 6]}
@@ -51,7 +85,6 @@ def test_generate(tmp_path):
             }
         }
     )
-    test["worker_uijson"]["value"] = ws.h5file.replace("ui.geoh5", "ui.json")
 
     path = os.path.join(tmp_path, "worker.ui.json")
     with open(path, 'w', encoding="utf8") as f:
