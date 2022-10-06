@@ -31,6 +31,7 @@ def test_params(tmp_path):
     )
     ifile = InputFile(ui_json=test)
     params = SweepParams.from_input_file(ifile)
+    _ = SweepDriver(params)
 
     assert os.path.split(params.worker_uijson)[-1] == "worker.ui.json"
     worker_params = params.worker_parameters()
