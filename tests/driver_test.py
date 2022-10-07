@@ -9,7 +9,6 @@ import itertools
 import json
 import os
 from copy import deepcopy
-from dataclasses import dataclass
 
 import numpy as np
 import pytest
@@ -18,8 +17,9 @@ from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
 
 from sweeps.constants import default_ui_json
-from sweeps.driver import (SweepDriver, SweepParams, file_validation, generate,
-                           main, sweep_forms, update_lookup)
+from sweeps.driver import (SweepDriver, SweepParams, file_validation, main,
+                           update_lookup)
+from sweeps.generate import generate
 
 
 def test_params(tmp_path):
@@ -66,64 +66,6 @@ def test_uuid_from_params():
         assert trial_uuid == SweepDriver.uuid_from_params(
             iteration
         ), "method is not deterministic"
-
-
-def test_sweep_forms():
-    forms = sweep_forms("test", 1)
-    params = ["test_start", "test_end", "test_n"]
-    assert len(forms) == 3
-    assert all(k in forms for k in params)
-    assert all(forms[k]["group"] == "Test" for k in params)
-    assert all(f["value"] == 1 for f in forms.values())
-    assert forms["test_end"]["optional"]
-    assert not forms["test_end"]["enabled"]
-    assert forms["test_n"]["dependency"] == "test_end"
-    assert forms["test_n"]["dependencyType"] == "enabled"
-    assert not forms["test_n"]["enabled"]
-
-
-def test_generate(tmp_path):
-    workspace = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
-
-    test = deepcopy(default_ui_json)
-    test.update(
-        {
-            "geoh5": workspace.h5file,
-            "param1": {"label": "param1", "value": 1},
-            "param2": {"label": "param2", "value": 2.5},
-        }
-    )
-
-    path = os.path.join(tmp_path, "worker.ui.json")
-    with open(path, "w", encoding="utf8") as file:
-        json.dump(test, file, indent=4)
-
-    generate(path)
-    with open(path.replace(".ui.json", "_sweep.ui.json")) as file:
-        data = json.load(file)
-
-    assert "param1_start" in data
-    assert "param1_end" in data
-    assert "param1_n" in data
-    assert "param2_start" in data
-    assert "param2_end" in data
-    assert "param2_n" in data
-
-    assert not data["param1_end"]["enabled"]
-    assert not data["param1_n"]["enabled"]
-    assert data["param1_n"]["dependency"] == "param1_end"
-    assert not data["param2_end"]["enabled"]
-    assert not data["param2_n"]["enabled"]
-    assert data["param2_n"]["dependency"] == "param2_end"
-
-    generate(path, parameters=["param1"])
-
-    with open(path.replace(".ui.json", "_sweep.ui.json")) as file:
-        data = json.load(file)
-
-    assert "param2_start" not in data
-    assert "param2_end" not in data
-    assert "param2_n" not in data
 
 
 def test_file_validation(tmp_path):
@@ -179,15 +121,7 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
     )
     ifile.write_ui_json("test.ui.json", path=tmp_path)
 
-    @dataclass
-    class ArgsStandin:
-        file: None
-        generate: None
-        parameters: None
-
-    args = ArgsStandin(file=uijson_path, generate=True, parameters=["param"])
-
-    main(args)
+    generate(uijson_path, parameters=["param"])
 
     with open(sweep_path, encoding="utf-8") as file:
         uijson = json.load(file)
@@ -200,22 +134,19 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
     with open(sweep_path, "w", encoding="utf-8") as file:
         json.dump(uijson, file, indent=4)
 
-    args.file = sweep_path
-    args.generate = False
-    args.parameters = None
-
     workspace.close()
-    main(args)
+    main(sweep_path, files_only=True)
     workspace.open()
 
     with open(os.path.join(tmp_path, "lookup.json"), encoding="utf-8") as file:
         lookup = json.load(file)
 
-    file_map = {v["param"]: k for k, v in lookup.items()}
-    check = []
-    for param in file_map:
-        out_ws = Workspace(os.path.join(tmp_path, file_map[param] + ".ui.geoh5"))
-        result = out_ws.get_entity("final")[0].values
-        check.append(all(result == 1 + param))
+    assert all(os.path.exists(os.path.join(tmp_path, f"{k}.ui.geoh5")) for k in lookup)
+    assert all(os.path.exists(os.path.join(tmp_path, f"{k}.ui.json")) for k in lookup)
+    assert len(lookup.values()) == 2
+    assert all(k["param"] in [1, 2] for k in lookup.values())
 
-    assert all(check)
+    for file_root in lookup:
+        file_ws = Workspace(os.path.join(tmp_path, f"{file_root}.ui.geoh5"))
+        data = file_ws.get_entity("data")[0]
+        assert any("initial" in k.name for k in data.children)

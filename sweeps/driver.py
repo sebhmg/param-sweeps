@@ -13,7 +13,6 @@ import json
 import os
 import subprocess
 import uuid
-from copy import deepcopy
 from dataclasses import dataclass
 from inspect import signature
 
@@ -22,8 +21,6 @@ from geoh5py.data import Data
 from geoh5py.shared.exceptions import BaseValidationError
 from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
-
-from sweeps.constants import default_ui_json
 
 
 @dataclass
@@ -108,7 +105,7 @@ class SweepDriver:
         """
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(params))))
 
-    def run(self):
+    def run(self, files_only=False):
         """Execute a sweep."""
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
@@ -154,15 +151,17 @@ class SweepDriver:
             ifile.path = os.path.dirname(workspace.h5file)
             ifile.write_ui_json()
 
-            call_subprocess(ifile)
+            if not files_only:
+                call_worker_subprocess(ifile)
 
         workspace.close()
 
 
-def call_subprocess(ifile):
+def call_worker_subprocess(ifile: InputFile):
+    """Runs the worker for the sweep parameters contained in 'ifile'."""
     conda_env = ifile.data["conda_environment"]
     run_cmd = ifile.data["run_command"]
-    with subprocess.Popen(
+    subprocess.run(
         [
             "conda.bat",
             "activate",
@@ -173,15 +172,11 @@ def call_subprocess(ifile):
             run_cmd,
             ifile.path_name,
         ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    ) as sub_process:
-        _, err = sub_process.communicate()
-        if sub_process.returncode != 0:
-            raise OSError(err)
+        check=True,
+    )
 
 
-def update_lookup(lookup, workspace):
+def update_lookup(lookup: dict, workspace: Workspace):
     """Updates lookup with new entries. Ensures any previous runs are incorporated."""
     lookup_path = os.path.join(os.path.dirname(workspace.h5file), "lookup.json")
     if os.path.exists(lookup_path):  # In case restarting
@@ -192,73 +187,6 @@ def update_lookup(lookup, workspace):
         json.dump(lookup, file, indent=4)
 
     return lookup
-
-
-def sweep_forms(param: str, value: int | float) -> dict:
-    """
-    Return a set of three ui.json entries for start, end and n (samples).
-
-    :param param: Parameter name
-    :param value: Parameter value
-    """
-    group = param.replace("_", " ").capitalize()
-    forms = {
-        f"{param}_start": {
-            "main": True,
-            "group": group,
-            "label": "starting",
-            "value": value,
-        },
-        f"{param}_end": {
-            "main": True,
-            "group": group,
-            "optional": True,
-            "enabled": False,
-            "label": "ending",
-            "value": value,
-        },
-        f"{param}_n": {
-            "main": True,
-            "group": group,
-            "dependency": f"{param}_end",
-            "dependencyType": "enabled",
-            "enabled": False,
-            "label": "number of samples",
-            "value": 1,
-        },
-    }
-
-    return forms
-
-
-def generate(file: str, parameters: list[str] = None):
-    """
-    Generate an *_sweep.ui.json file to sweep parameters of the driver associated with 'file'.
-
-    :param file: Name of .ui.json file
-    :param parameters: Parameters to include in the _sweep.ui.json file
-    """
-
-    ifile = InputFile.read_ui_json(file)
-    sweepfile = InputFile(
-        ui_json=deepcopy(default_ui_json), validation_options={"disabled": True}
-    )
-
-    for param, value in ifile.data.items():
-
-        if parameters is not None and param not in parameters:
-            continue
-
-        if type(value) in [int, float]:
-            forms = sweep_forms(param, value)
-            sweepfile.ui_json.update(forms)
-
-    sweepfile.data["geoh5"] = ifile.data["geoh5"]
-    dirname = os.path.dirname(ifile.data["geoh5"].h5file)
-    filename = os.path.basename(ifile.data["geoh5"].h5file)
-    filename = filename.replace(".ui", "")
-    filename = filename.replace(".geoh5", "_sweep.ui.json")
-    sweepfile.write_ui_json(name=filename, path=dirname)
 
 
 def file_validation(filepath):
@@ -274,24 +202,16 @@ def file_validation(filepath):
         raise OSError(f"File argument {filepath} must have extension 'ui.json'.")
 
 
-def main(arguments):
+def main(file_path, files_only=False):
     """Run the program."""
 
-    file_path = arguments.file
     file_validation(file_path)
-
-    if arguments.generate:  # Write a sweep file
-
-        generate(file_path, parameters=arguments.parameters)
-
-    else:  # Run the sweep
-
-        print("Reading parameters and workspace...")
-        if "_sweep" not in file_path:
-            file_path = file_path.replace(".ui.json", "_sweep.ui.json")
-        input_file = InputFile.read_ui_json(file_path)
-        sweep_params = SweepParams.from_input_file(input_file)
-        SweepDriver(sweep_params).run()
+    print("Reading parameters and workspace...")
+    if "_sweep" not in file_path:
+        file_path = file_path.replace(".ui.json", "_sweep.ui.json")
+    input_file = InputFile.read_ui_json(file_path)
+    sweep_params = SweepParams.from_input_file(input_file)
+    SweepDriver(sweep_params).run(files_only)
 
 
 if __name__ == "__main__":
@@ -300,16 +220,6 @@ if __name__ == "__main__":
         description="Run parameter sweep of worker driver."
     )
     parser.add_argument("file", help="File with ui.json format.")
-    parser.add_argument(
-        "--generate",
-        help="Generate a sweeper ui.json from the worker ui.json.",
-        action="store_true",
-    )
-    parser.add_argument(
-        "--parameters",
-        help="List of parameters to be included as sweep parameters.",
-        nargs="+",
-    )
 
     args = parser.parse_args()
-    main(args)
+    main(args.file)
