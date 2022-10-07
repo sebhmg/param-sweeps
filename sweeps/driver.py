@@ -33,10 +33,10 @@ class SweepParams:
     title: str = "Parameter sweep"
     run_command: str = "sweeps.driver"
     conda_environment: str = "sweeps"
-    monitoring_directory: str = None
-    workspace_geoh5: Workspace = None
-    geoh5: Workspace = None
-    _worker_uijson: str = None
+    monitoring_directory: str | None = None
+    workspace_geoh5: Workspace | None = None
+    geoh5: Workspace | None = None
+    _worker_uijson: str | None = None
 
     @classmethod
     def from_input_file(cls, ifile: InputFile):
@@ -64,7 +64,7 @@ class SweepParams:
             root = os.path.dirname(self.geoh5.h5file)
             file = os.path.basename(self.geoh5.h5file)
             file = file.replace("_sweep", "")
-            file = file.replace(".ui.geoh5", ".ui.json")
+            file = file.replace(".ui.geoh5" if ".ui." in file else ".geoh5", ".ui.json")
             self._worker_uijson = os.path.join(root, file)
 
         return self._worker_uijson
@@ -73,7 +73,7 @@ class SweepParams:
         """Return all sweep parameter names."""
         return [k.replace("_start", "") for k in self.__dict__ if k.endswith("_start")]
 
-    def parameter_sets(self) -> dict[str, list[int | float]]:
+    def parameter_sets(self) -> dict:
         """Return sets of parameter values that will be combined to form the sweep."""
         names = self.worker_parameters()
         sets = {
@@ -108,12 +108,11 @@ class SweepDriver:
         """
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(params))))
 
-
     def run(self):
         """Execute a sweep."""
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
-        workspace = ifile.data["geoh5"].open(mode='r')
+        workspace = ifile.data["geoh5"].open(mode="r")
         sets = self.params.parameter_sets()
         iterations = list(itertools.product(*sets.values()))
         print(
@@ -141,7 +140,9 @@ class SweepDriver:
                 f"Use lookup.json to map uuid to parameter set."
             )
             with Workspace(filepath) as iter_workspace:
-                ifile.data.update(dict(param_lookup[param_uuid], **{"geoh5": iter_workspace}))
+                ifile.data.update(
+                    dict(param_lookup[param_uuid], **{"geoh5": iter_workspace})
+                )
                 objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
                 for obj in objects:
                     if not isinstance(obj, Data):
@@ -153,17 +154,31 @@ class SweepDriver:
             ifile.path = os.path.dirname(workspace.h5file)
             ifile.write_ui_json()
 
-            conda_env = ifile.data["conda_environment"]
-            run_cmd = ifile.data["run_command"]
-            subprocess.run(
-                [
-                    "conda.bat", "activate", conda_env, "&&",
-                    "python", "-m", run_cmd, ifile.path_name,
-                ],
-                check=True
-            )
+            call_subprocess(ifile)
 
         workspace.close()
+
+
+def call_subprocess(ifile):
+    conda_env = ifile.data["conda_environment"]
+    run_cmd = ifile.data["run_command"]
+    with subprocess.Popen(
+        [
+            "conda.bat",
+            "activate",
+            conda_env,
+            "&&",
+            "python",
+            "-m",
+            run_cmd,
+            ifile.path_name,
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ) as sub_process:
+        _, err = sub_process.communicate()
+        if sub_process.returncode != 0:
+            raise OSError(err)
 
 
 def update_lookup(lookup, workspace):
@@ -246,6 +261,39 @@ def generate(file: str, parameters: list[str] = None):
     sweepfile.write_ui_json(name=filename, path=dirname)
 
 
+def file_validation(filepath):
+    """Validate file."""
+    if filepath.endswith("ui.json"):
+        try:
+            InputFile.read_ui_json(filepath)
+        except BaseValidationError as err:
+            raise OSError(
+                f"File argument {filepath} is not a valid ui.json file."
+            ) from err
+    else:
+        raise OSError(f"File argument {filepath} must have extension 'ui.json'.")
+
+
+def main(arguments):
+    """Run the program."""
+
+    file_path = arguments.file
+    file_validation(file_path)
+
+    if arguments.generate:  # Write a sweep file
+
+        generate(file_path, parameters=arguments.parameters)
+
+    else:  # Run the sweep
+
+        print("Reading parameters and workspace...")
+        if "_sweep" not in file_path:
+            file_path = file_path.replace(".ui.json", "_sweep.ui.json")
+        input_file = InputFile.read_ui_json(file_path)
+        sweep_params = SweepParams.from_input_file(input_file)
+        SweepDriver(sweep_params).run()
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(
@@ -264,25 +312,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    file_path = args.file
-
-    if file_path.endswith("ui.json"):
-        try:
-            InputFile.read_ui_json(file_path)
-        except BaseValidationError as e:
-            raise OSError(
-                f"File argument {file_path} is not a valid ui.json file."
-            ) from e
-    else:
-        raise OSError(f"File argument {file_path} must have extension 'ui.json'.")
-
-    if args.generate:
-        generate(file_path, parameters=args.parameters)
-    else:
-
-        print("Reading parameters and workspace...")
-        if "_sweep" not in file_path:
-            file_path = file_path.replace(".ui.json", "_sweep.ui.json")
-        input_file = InputFile.read_ui_json(file_path)
-        sweep_params = SweepParams.from_input_file(input_file)
-        SweepDriver(sweep_params).run()
+    main(args)
