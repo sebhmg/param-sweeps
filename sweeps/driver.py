@@ -82,7 +82,7 @@ class SweepParams:
             for n in names
         }
         sets = {
-            k: [v[0]] if v[1] is None else np.linspace(*v, dtype=int).tolist()
+            k: [v[0]] if v[1] is None else np.linspace(*v).tolist()
             for k, v in sets.items()
         }
         return sets
