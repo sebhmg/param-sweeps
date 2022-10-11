@@ -161,7 +161,7 @@ def call_worker_subprocess(ifile: InputFile):
     conda_env = ifile.data["conda_environment"]
     run_cmd = ifile.data["run_command"]
     subprocess.run(
-        f"conda run -n {conda_env} python -m {run_cmd} {ifile.path_name}".split(),
+        ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
         check=True,
     )
 
