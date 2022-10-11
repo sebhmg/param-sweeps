@@ -55,9 +55,10 @@ class SweepParams:
         return val
 
     @property
-    def worker_uijson(self):
+    def worker_uijson(self) -> str | None:
+        """Path to ui.json for worker application."""
 
-        if self._worker_uijson is None:
+        if self._worker_uijson is None and self.geoh5 is not None:
             root = os.path.dirname(self.geoh5.h5file)
             file = os.path.basename(self.geoh5.h5file)
             file = file.replace("_sweep", "")
@@ -109,52 +110,50 @@ class SweepDriver:
         """Execute a sweep."""
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
-        workspace = ifile.data["geoh5"].open(mode="r")
-        sets = self.params.parameter_sets()
-        iterations = list(itertools.product(*sets.values()))
-        print(
-            f"Running parameter sweep for {len(iterations)} "
-            f"trials of the {ifile.data['title']} driver."
-        )
-
-        param_lookup = {}
-        for count, iteration in enumerate(iterations):
-            param_uuid = SweepDriver.uuid_from_params(iteration)
-            filepath = os.path.join(
-                os.path.dirname(workspace.h5file), f"{param_uuid}.ui.geoh5"
-            )
-            param_lookup[param_uuid] = dict(zip(sets.keys(), iteration))
-
-            if os.path.exists(filepath):
-                print(
-                    f"{count}: Skipping trial: {param_uuid}. "
-                    f"Already computed and saved to file."
-                )
-                continue
-
+        with ifile.data["geoh5"].open(mode="r") as workspace:
+            sets = self.params.parameter_sets()
+            iterations = list(itertools.product(*sets.values()))
             print(
-                f"{count}: Running trial: {param_uuid}. "
-                f"Use lookup.json to map uuid to parameter set."
+                f"Running parameter sweep for {len(iterations)} "
+                f"trials of the {ifile.data['title']} driver."
             )
-            with Workspace(filepath) as iter_workspace:
-                ifile.data.update(
-                    dict(param_lookup[param_uuid], **{"geoh5": iter_workspace})
+
+            param_lookup = {}
+            for count, iteration in enumerate(iterations):
+                param_uuid = SweepDriver.uuid_from_params(iteration)
+                filepath = os.path.join(
+                    os.path.dirname(workspace.h5file), f"{param_uuid}.ui.geoh5"
                 )
-                objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
-                for obj in objects:
-                    if not isinstance(obj, Data):
-                        obj.copy(parent=iter_workspace, copy_children=True)
+                param_lookup[param_uuid] = dict(zip(sets.keys(), iteration))
 
-            update_lookup(param_lookup, workspace)
+                if os.path.exists(filepath):
+                    print(
+                        f"{count}: Skipping trial: {param_uuid}. "
+                        f"Already computed and saved to file."
+                    )
+                    continue
 
-            ifile.name = f"{param_uuid}.ui.json"
-            ifile.path = os.path.dirname(workspace.h5file)
-            ifile.write_ui_json()
+                print(
+                    f"{count}: Running trial: {param_uuid}. "
+                    f"Use lookup.json to map uuid to parameter set."
+                )
+                with Workspace(filepath) as iter_workspace:
+                    ifile.data.update(
+                        dict(param_lookup[param_uuid], **{"geoh5": iter_workspace})
+                    )
+                    objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
+                    for obj in objects:
+                        if not isinstance(obj, Data):
+                            obj.copy(parent=iter_workspace, copy_children=True)
 
-            if not files_only:
-                call_worker_subprocess(ifile)
+                update_lookup(param_lookup, workspace)
 
-        workspace.close()
+                ifile.name = f"{param_uuid}.ui.json"
+                ifile.path = os.path.dirname(workspace.h5file)
+                ifile.write_ui_json()
+
+                if not files_only:
+                    call_worker_subprocess(ifile)
 
 
 def call_worker_subprocess(ifile: InputFile):
