@@ -25,34 +25,14 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.7.2,<3.11"
 geoh5py = "~0.4.0"
+numpy = "!=1.19.4, ^1.21.5"
 
-numpy = "!=1.19.4, ^1.21.5" # also in simpeg and geoana
-
-
-## indirect dependencies, forcing them here for installation through Conda not pip
-h5py = "^3.2.1" # from geoh5py
-
-## pip dependencies
-# to be specified to work with conda-lock
-# - from PyPI: my_package = { version = "1.2.3", source = "pypi" }
-# - from URL:
-#   - for a tags: my_package = { url = "https://github.com/ORGANISATION/REPO/archive/refs/tags/VERSION_TAG.zip#sha256=None" }
-#   - for a branch: my_package = { url = "https://github.com/ORGANISATION/REPO/archive/refs/heads/BRANCH.zip#sha256=None" }
-# Note - conda-lock does not support the syntaxe: my_package = { git = ... }
-#        while poetry2conda supports only { git = "...", tag = "..." }, and not { url = ... }
 
 [tool.poetry.dev-dependencies]
 pylint = "^2.14.4"
 pytest = "^7.1.2"
 pytest-cov = "^3.0.0"
 requests = "^2.27.1" # for tests only
-
-[tool.conda-lock]
-platforms = ['win-64', 'osx-64', 'linux-64']
-channels = ['conda-forge', 'defaults']
-
-[tool.conda-lock.dependencies]
-libblas = "*=*mkl"
 
 [tool.isort]
 # settings for compatibility between ``isort`` and ``black`` formatting
@@ -64,14 +44,6 @@ line_length = 88
 
 [tool.black]
 # defaults are just fine
-
-[tool.poetry2conda]
-name = "geoapps"
-## usage of poetry2conda
-# As poetry2conda does not support url sources for pip dependencies,
-# temporarily edit this file and use git sources instead, with 'tag=' indifferently whether it is actually a branch or rev.
-#> poetry2conda pyproject.toml -E full environment.yml
-#> poetry2conda pyproject.toml -E full --dev environment-dev.yml
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "setuptools"]
