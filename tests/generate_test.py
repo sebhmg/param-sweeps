@@ -32,7 +32,7 @@ def test_generate(tmp_path):
         json.dump(test, file, indent=4)
 
     generate(path)
-    with open(path.replace(".ui.json", "_sweep.ui.json")) as file:
+    with open(path.replace(".ui.json", "_sweep.ui.json"), encoding="utf8") as file:
         data = json.load(file)
 
     assert "param1_start" in data
@@ -51,7 +51,7 @@ def test_generate(tmp_path):
 
     generate(path, parameters=["param1"])
 
-    with open(path.replace(".ui.json", "_sweep.ui.json")) as file:
+    with open(path.replace(".ui.json", "_sweep.ui.json"), encoding="utf8") as file:
         data = json.load(file)
 
     assert "param2_start" not in data
