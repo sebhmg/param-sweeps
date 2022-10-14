@@ -170,10 +170,10 @@ def update_lookup(lookup: dict, workspace: Workspace):
     """Updates lookup with new entries. Ensures any previous runs are incorporated."""
     lookup_path = os.path.join(os.path.dirname(workspace.h5file), "lookup.json")
     if os.path.exists(lookup_path):  # In case restarting
-        with open(lookup_path) as file:
+        with open(lookup_path, encoding="utf8") as file:
             lookup.update(json.load(file))
 
-    with open(lookup_path, "w") as file:
+    with open(lookup_path, "w", encoding="utf8") as file:
         json.dump(lookup, file, indent=4)
 
     return lookup
