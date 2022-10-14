@@ -56,9 +56,9 @@ jobs:
       if: github.event_name == 'pull_request'
       run: >-
         poetry run pylint $(
-        git diff --diff-filter=AM --name-only refs/remotes/origin/${{github.base_ref}}... | grep -E '^(sweeps|tests)/.*\.py$'
-        || echo 'sweeps/__init__.py'
+        git diff --diff-filter=AM --name-only refs/remotes/origin/${{github.base_ref}}... | grep -E '^(param_sweeps|tests)/.*\.py$'
+        || echo 'param_sweeps/__init__.py'
         )
     - name: Run pylint on all files
       if: github.event_name == 'push'
-      run: poetry run pylint param-sweeps tests
+      run: poetry run pylint param_sweeps tests

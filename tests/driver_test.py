@@ -16,10 +16,15 @@ from geoh5py.objects import Points
 from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
 
-from sweeps.constants import default_ui_json
-from sweeps.driver import (SweepDriver, SweepParams, file_validation, main,
-                           update_lookup)
-from sweeps.generate import generate
+from param_sweeps.constants import default_ui_json
+from param_sweeps.driver import (
+    SweepDriver,
+    SweepParams,
+    file_validation,
+    main,
+    update_lookup,
+)
+from param_sweeps.generate import generate
 
 
 def test_params(tmp_path):
@@ -114,7 +119,7 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
     }
     ui_json = dict(ui_json, **deepcopy(default_ui_json))
     ui_json["geoh5"] = workspace
-    ui_json["run_command"] = "sweeps.sample_worker"
+    ui_json["run_command"] = "param_sweeps.sample_worker"
     ifile = InputFile(
         ui_json=ui_json,
         data={k: v["value"] if isinstance(v, dict) else v for k, v in ui_json.items()},

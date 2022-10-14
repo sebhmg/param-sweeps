@@ -1,5 +1,4 @@
 *.pyc
-sweeps.egg-info
 .idea
-/tests/436b77f3-88a1-587e-9301-b63cfbaeddb1.ui.geoh5
-/tests/test.geoh5
+/tests/**/*.geoh5
+/dist/**

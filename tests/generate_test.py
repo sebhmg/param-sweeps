@@ -11,8 +11,8 @@ from copy import deepcopy
 
 from geoh5py.workspace import Workspace
 
-from sweeps.constants import default_ui_json
-from sweeps.generate import generate, sweep_forms
+from param_sweeps.constants import default_ui_json
+from param_sweeps.generate import generate, sweep_forms
 
 
 def test_generate(tmp_path):
@@ -32,7 +32,7 @@ def test_generate(tmp_path):
         json.dump(test, file, indent=4)
 
     generate(path)
-    with open(path.replace(".ui.json", "_sweep.ui.json")) as file:
+    with open(path.replace(".ui.json", "_sweep.ui.json"), encoding="utf8") as file:
         data = json.load(file)
 
     assert "param1_start" in data
@@ -51,7 +51,7 @@ def test_generate(tmp_path):
 
     generate(path, parameters=["param1"])
 
-    with open(path.replace(".ui.json", "_sweep.ui.json")) as file:
+    with open(path.replace(".ui.json", "_sweep.ui.json"), encoding="utf8") as file:
         data = json.load(file)
 
     assert "param2_start" not in data
