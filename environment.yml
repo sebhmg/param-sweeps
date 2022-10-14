@@ -1,4 +1,4 @@
-name: sweeps
+name: param_sweeps
 channels:
 dependencies:
   - python=3.9

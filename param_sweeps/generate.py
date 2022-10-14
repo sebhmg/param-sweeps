@@ -13,7 +13,7 @@ from copy import deepcopy
 
 from geoh5py.ui_json import InputFile
 
-from sweeps.constants import default_ui_json
+from param_sweeps.constants import default_ui_json
 
 
 def generate(file: str, parameters: list[str] = None):

@@ -12,14 +12,14 @@ To generate a sweep file from a ui.json file for an existing
 application, use the following command:
 
 ```bash
-conda activate sweeps && python -m sweeps.generate some_file.ui.json
+conda activate param_sweeps && python -m param_sweeps.generate some_file.ui.json
 ```
 
 This will create a new `some_file_sweep.ui.json` file that may be run
 with:
 
 ```bash
-python -m sweeps.driver some_file_sweep.ui.json
+python -m param_sweeps.driver some_file_sweep.ui.json
 ```
 
 By default, this would execute a single run of the original parameters.

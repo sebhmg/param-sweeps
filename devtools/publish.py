@@ -9,11 +9,11 @@ from pathlib import Path
 
 from poetry_publish.publish import poetry_publish
 
-import sweeps
+import param_sweeps
 
 
 def publish():
     poetry_publish(
-        package_root=Path(sweeps.__file__).parent.parent,
-        version=sweeps.__version__,
+        package_root=Path(param_sweeps.__file__).parent.parent,
+        version=param_sweeps.__version__,
     )

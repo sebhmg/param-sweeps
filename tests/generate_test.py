@@ -11,8 +11,8 @@ from copy import deepcopy
 
 from geoh5py.workspace import Workspace
 
-from sweeps.constants import default_ui_json
-from sweeps.generate import generate, sweep_forms
+from param_sweeps.constants import default_ui_json
+from param_sweeps.generate import generate, sweep_forms
 
 
 def test_generate(tmp_path):

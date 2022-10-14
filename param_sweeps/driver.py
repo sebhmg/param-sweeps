@@ -28,8 +28,8 @@ class SweepParams:
     """Parametrizes a sweep of the worker driver."""
 
     title: str = "Parameter sweep"
-    run_command: str = "sweeps.driver"
-    conda_environment: str = "sweeps"
+    run_command: str = "param_sweeps.driver"
+    conda_environment: str = "param_sweeps"
     monitoring_directory: str | None = None
     workspace_geoh5: Workspace | None = None
     geoh5: Workspace | None = None
