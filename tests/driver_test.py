@@ -17,8 +17,13 @@ from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
 
 from param_sweeps.constants import default_ui_json
-from param_sweeps.driver import (SweepDriver, SweepParams, file_validation, main,
-                                 update_lookup)
+from param_sweeps.driver import (
+    SweepDriver,
+    SweepParams,
+    file_validation,
+    main,
+    update_lookup,
+)
 from param_sweeps.generate import generate
 
 
