@@ -73,19 +73,21 @@ class SweepParams:
 
     def parameter_sets(self) -> dict:
         """Return sets of parameter values that will be combined to form the sweep."""
+
         names = self.worker_parameters()
-        sets = {
-            n: (
-                getattr(self, f"{n}_start"),
-                getattr(self, f"{n}_end"),
-                getattr(self, f"{n}_n"),
+
+        sets = {}
+        for name in names:
+            sweep = (
+                getattr(self, f"{name}_start"),
+                getattr(self, f"{name}_end"),
+                getattr(self, f"{name}_n"),
             )
-            for n in names
-        }
-        sets = {
-            k: [v[0]] if v[1] is None else np.linspace(*v).tolist()
-            for k, v in sets.items()
-        }
+            if sweep[1] is None:
+                sets[name] = [sweep[0]]
+            else:
+                sets[name] = [type(sweep[0])(s) for s in np.linspace(*sweep)]
+
         return sets
 
 
@@ -170,10 +172,10 @@ def update_lookup(lookup: dict, workspace: Workspace):
     """Updates lookup with new entries. Ensures any previous runs are incorporated."""
     lookup_path = os.path.join(os.path.dirname(workspace.h5file), "lookup.json")
     if os.path.exists(lookup_path):  # In case restarting
-        with open(lookup_path) as file:
+        with open(lookup_path, encoding="utf8") as file:
             lookup.update(json.load(file))
 
-    with open(lookup_path, "w") as file:
+    with open(lookup_path, "w", encoding="utf8") as file:
         json.dump(lookup, file, indent=4)
 
     return lookup
