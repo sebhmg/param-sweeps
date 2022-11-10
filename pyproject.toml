@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "param-sweeps"
-version = "0.1.0"
+version = "0.1.2"
 description = "Parameter sweeper for ui.json powered applications"
 authors = ["Mira Geoscience <benjamink@mirageoscience.com>"]
 repository = "https://github.com/MiraGeoscience/param-sweeps"
@@ -24,7 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.7.2,<3.11"
-geoh5py = "~0.4.0"
+geoh5py = "~0.5.0"
 numpy = "!=1.19.4, ^1.21.5"
 
 
