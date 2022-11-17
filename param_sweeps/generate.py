@@ -16,18 +16,22 @@ from geoh5py.ui_json import InputFile
 from param_sweeps.constants import default_ui_json
 
 
-def generate(file: str, parameters: list[str] = None):
+def generate(file: str, parameters: list[str] = None, update_values: dict = None):
     """
     Generate an *_sweep.ui.json file to sweep parameters of the driver associated with 'file'.
 
     :param file: Name of .ui.json file
     :param parameters: Parameters to include in the _sweep.ui.json file
+    :param update_values: Updates for sweep files parameters
     """
 
+    file = os.path.abspath(file)
     ifile = InputFile.read_ui_json(file)
     sweepfile = InputFile(
         ui_json=deepcopy(default_ui_json), validation_options={"disabled": True}
     )
+    if update_values:
+        sweepfile.data.update(update_values)
 
     for param, value in ifile.data.items():
 
@@ -39,10 +43,12 @@ def generate(file: str, parameters: list[str] = None):
             sweepfile.ui_json.update(forms)
 
     sweepfile.data["geoh5"] = ifile.data["geoh5"]
-    dirname = os.path.dirname(ifile.data["geoh5"].h5file)
-    filename = os.path.basename(ifile.data["geoh5"].h5file)
-    filename = filename.replace(".ui", "")
-    filename = filename.replace(".geoh5", "_sweep.ui.json")
+    dirname = os.path.dirname(file)
+    filename = os.path.basename(file)
+    filename = filename.replace("_sweep", "")
+    filename = filename.replace(".ui.json", "_sweep.ui.json")
+
+    print(f"Writing sweep file to: {os.path.join(dirname, filename)}")
     sweepfile.write_ui_json(name=filename, path=dirname)
 
 
