@@ -36,6 +36,7 @@ def test_params(tmp_path):
             "param1_start": {"label": "param1 start", "value": 1},
             "param1_end": {"label": "param1 end", "value": 2},
             "param1_n": {"label": "param1 n samples", "value": 2},
+            "worker_uijson": "worker.ui.json",
         }
     )
     ifile = InputFile(ui_json=test)
