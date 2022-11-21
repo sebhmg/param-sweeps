@@ -57,15 +57,11 @@ class SweepParams:
     @property
     def worker_uijson(self) -> str | None:
         """Path to ui.json for worker application."""
-
-        if self._worker_uijson is None and self.geoh5 is not None:
-            root = os.path.dirname(self.geoh5.h5file)
-            file = os.path.basename(self.geoh5.h5file)
-            file = file.replace("_sweep", "")
-            file = file.replace(".ui.geoh5" if ".ui." in file else ".geoh5", ".ui.json")
-            self._worker_uijson = os.path.join(root, file)
-
         return self._worker_uijson
+
+    @worker_uijson.setter
+    def worker_uijson(self, val):
+        self._worker_uijson = val
 
     def worker_parameters(self) -> list[str]:
         """Return all sweep parameter names."""
@@ -199,8 +195,8 @@ def main(file_path, files_only=False):
 
     file_validation(file_path)
     print("Reading parameters and workspace...")
-    if "_sweep" not in file_path:
-        file_path = file_path.replace(".ui.json", "_sweep.ui.json")
+    # if "_sweep" not in file_path:
+    #     file_path = file_path.replace(".ui.json", "_sweep.ui.json")
     input_file = InputFile.read_ui_json(file_path)
     sweep_params = SweepParams.from_input_file(input_file)
     SweepDriver(sweep_params).run(files_only)
