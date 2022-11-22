@@ -7,6 +7,7 @@
 
 default_ui_json = {
     "title": "Parameter sweep",
+    "worker_uijson": None,
     "run_command": "param_sweeps.driver",
     "conda_environment": "param_sweeps",
     "monitoring_directory": None,

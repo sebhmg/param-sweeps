@@ -57,15 +57,11 @@ class SweepParams:
     @property
     def worker_uijson(self) -> str | None:
         """Path to ui.json for worker application."""
-
-        if self._worker_uijson is None and self.geoh5 is not None:
-            root = os.path.dirname(self.geoh5.h5file)
-            file = os.path.basename(self.geoh5.h5file)
-            file = file.replace("_sweep", "")
-            file = file.replace(".ui.geoh5" if ".ui." in file else ".geoh5", ".ui.json")
-            self._worker_uijson = os.path.join(root, file)
-
         return self._worker_uijson
+
+    @worker_uijson.setter
+    def worker_uijson(self, val):
+        self._worker_uijson = val
 
     def worker_parameters(self) -> list[str]:
         """Return all sweep parameter names."""
@@ -73,19 +69,21 @@ class SweepParams:
 
     def parameter_sets(self) -> dict:
         """Return sets of parameter values that will be combined to form the sweep."""
+
         names = self.worker_parameters()
-        sets = {
-            n: (
-                getattr(self, f"{n}_start"),
-                getattr(self, f"{n}_end"),
-                getattr(self, f"{n}_n"),
+
+        sets = {}
+        for name in names:
+            sweep = (
+                getattr(self, f"{name}_start"),
+                getattr(self, f"{name}_end"),
+                getattr(self, f"{name}_n"),
             )
-            for n in names
-        }
-        sets = {
-            k: [v[0]] if v[1] is None else np.linspace(*v).tolist()
-            for k, v in sets.items()
-        }
+            if sweep[1] is None:
+                sets[name] = [sweep[0]]
+            else:
+                sets[name] = [type(sweep[0])(s) for s in np.linspace(*sweep)]
+
         return sets
 
 
@@ -158,10 +156,8 @@ class SweepDriver:
 
 def call_worker_subprocess(ifile: InputFile):
     """Runs the worker for the sweep parameters contained in 'ifile'."""
-    conda_env = ifile.data["conda_environment"]
-    run_cmd = ifile.data["run_command"]
     subprocess.run(
-        ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
+        ["python", "-m", ifile.data["run_command"], ifile.path_name],
         check=True,
     )
 
@@ -197,8 +193,6 @@ def main(file_path, files_only=False):
 
     file_validation(file_path)
     print("Reading parameters and workspace...")
-    if "_sweep" not in file_path:
-        file_path = file_path.replace(".ui.json", "_sweep.ui.json")
     input_file = InputFile.read_ui_json(file_path)
     sweep_params = SweepParams.from_input_file(input_file)
     SweepDriver(sweep_params).run(files_only)
