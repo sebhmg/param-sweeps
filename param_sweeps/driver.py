@@ -156,10 +156,8 @@ class SweepDriver:
 
 def call_worker_subprocess(ifile: InputFile):
     """Runs the worker for the sweep parameters contained in 'ifile'."""
-    conda_env = ifile.data["conda_environment"]
-    run_cmd = ifile.data["run_command"]
     subprocess.run(
-        ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
+        ["python", "-m", ifile.data["run_command"], ifile.path_name],
         check=True,
     )
 
