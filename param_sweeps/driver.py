@@ -195,8 +195,6 @@ def main(file_path, files_only=False):
 
     file_validation(file_path)
     print("Reading parameters and workspace...")
-    # if "_sweep" not in file_path:
-    #     file_path = file_path.replace(".ui.json", "_sweep.ui.json")
     input_file = InputFile.read_ui_json(file_path)
     sweep_params = SweepParams.from_input_file(input_file)
     SweepDriver(sweep_params).run(files_only)
