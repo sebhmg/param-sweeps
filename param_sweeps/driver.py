@@ -15,6 +15,7 @@ import subprocess
 import uuid
 from dataclasses import dataclass
 from inspect import signature
+from copy import deepcopy
 
 import numpy as np
 from geoh5py.data import Data
@@ -92,6 +93,7 @@ class SweepDriver:
 
     def __init__(self, params):
         self.params: SweepParams = params
+        self.working_directory = os.path.dirname(self.workspace.h5file)
 
     @staticmethod
     def uuid_from_params(params: tuple) -> str:
@@ -104,7 +106,55 @@ class SweepDriver:
         """
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, str(hash(params))))
 
-    def run(self, files_only=False):
+    def get_lookup(self):
+        """Generate lookup table for sweep trials."""
+
+        lookup = {}
+        lookup = update_lookup(lookup, self.working_directory)
+        if lookup:
+            existing_lookup = deepcopy(lookup)
+
+        sets = self.params.parameter_sets()
+        iterations = list(itertools.product(*sets.values()))
+        for iteration in iterations:
+            param_uuid = SweepDriver.uuid_from_params(iteration)
+            lookup[param_uuid] = dict(zip(sets.keys(), iteration))
+            lookup[param_uuid]["status"] = "pending"
+
+            update_lookup(lookup, self.working_directory)
+            return lookup
+
+
+    def write_files(self, lookup):
+        """Write ui.geoh5 and ui.json files for sweep trials."""
+
+        ifile = InputFile.read_ui_json(self.params.worker_uijson)
+        with ifile.data["geoh5"].open(mode="r") as workspace:
+
+            for param_uuid, iteration in lookup.items():
+
+                status = iteration.pop("status")
+                if status == "pending":
+                    filepath = os.path.join(
+                        os.path.dirname(workspace.h5file), f"{param_uuid}.ui.geoh5"
+                    )
+                    with Workspace(filepath) as iter_workspace:
+                        ifile.data.update(
+                            dict(lookup[param_uuid], **{"geoh5": iter_workspace})
+                        )
+                        objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
+                        for obj in objects:
+                            if not isinstance(obj, Data):
+                                obj.copy(parent=iter_workspace, copy_children=True)
+
+                    ifile.name = f"{param_uuid}.ui.json"
+                    ifile.path = os.path.dirname(workspace.h5file)
+                    ifile.write_ui_json()
+                    lookup[param_uuid]["status"] = "written"
+
+        update_lookup(lookup, os.path.dirname(self.workspace.h5file))
+
+    def run(self):
         """Execute a sweep."""
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
@@ -164,9 +214,9 @@ def call_worker_subprocess(ifile: InputFile):
     )
 
 
-def update_lookup(lookup: dict, workspace: Workspace):
+def update_lookup(lookup: dict, working_directory: str):
     """Updates lookup with new entries. Ensures any previous runs are incorporated."""
-    lookup_path = os.path.join(os.path.dirname(workspace.h5file), "lookup.json")
+    lookup_path = os.path.join(working_directory, "lookup.json")
     if os.path.exists(lookup_path):  # In case restarting
         with open(lookup_path, encoding="utf8") as file:
             lookup.update(json.load(file))
