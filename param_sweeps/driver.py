@@ -15,7 +15,6 @@ import subprocess
 import uuid
 from dataclasses import dataclass
 from inspect import signature
-from copy import deepcopy
 
 import numpy as np
 from geoh5py.data import Data
@@ -93,6 +92,7 @@ class SweepDriver:
 
     def __init__(self, params):
         self.params: SweepParams = params
+        self.workspace = params.geoh5
         self.working_directory = os.path.dirname(self.workspace.h5file)
 
     @staticmethod
@@ -110,10 +110,6 @@ class SweepDriver:
         """Generate lookup table for sweep trials."""
 
         lookup = {}
-        lookup = update_lookup(lookup, self.working_directory)
-        if lookup:
-            existing_lookup = deepcopy(lookup)
-
         sets = self.params.parameter_sets()
         iterations = list(itertools.product(*sets.values()))
         for iteration in iterations:
@@ -121,9 +117,20 @@ class SweepDriver:
             lookup[param_uuid] = dict(zip(sets.keys(), iteration))
             lookup[param_uuid]["status"] = "pending"
 
-            update_lookup(lookup, self.working_directory)
-            return lookup
+        lookup = self.update_lookup(lookup, gather_first=True)
+        return lookup
 
+    def update_lookup(self, lookup: dict, gather_first: bool = False):
+        """Updates lookup with new entries. Ensures any previous runs are incorporated."""
+        lookup_path = os.path.join(self.working_directory, "lookup.json")
+        if os.path.exists(lookup_path) and gather_first:  # In case restarting
+            with open(lookup_path, encoding="utf8") as file:
+                lookup.update(json.load(file))
+
+        with open(lookup_path, "w", encoding="utf8") as file:
+            json.dump(lookup, file, indent=4)
+
+        return lookup
 
     def write_files(self, lookup):
         """Write ui.geoh5 and ui.json files for sweep trials."""
@@ -131,77 +138,49 @@ class SweepDriver:
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
         with ifile.data["geoh5"].open(mode="r") as workspace:
 
-            for param_uuid, iteration in lookup.items():
+            for name, trial in lookup.items():
 
-                status = iteration.pop("status")
+                status = trial.pop("status")
                 if status == "pending":
                     filepath = os.path.join(
-                        os.path.dirname(workspace.h5file), f"{param_uuid}.ui.geoh5"
+                        os.path.dirname(workspace.h5file), f"{name}.ui.geoh5"
                     )
                     with Workspace(filepath) as iter_workspace:
                         ifile.data.update(
-                            dict(lookup[param_uuid], **{"geoh5": iter_workspace})
+                            dict(lookup[name], **{"geoh5": iter_workspace})
                         )
                         objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
                         for obj in objects:
                             if not isinstance(obj, Data):
                                 obj.copy(parent=iter_workspace, copy_children=True)
 
-                    ifile.name = f"{param_uuid}.ui.json"
+                    ifile.name = f"{name}.ui.json"
                     ifile.path = os.path.dirname(workspace.h5file)
                     ifile.write_ui_json()
-                    lookup[param_uuid]["status"] = "written"
+                    lookup[name]["status"] = "written"
+                else:
+                    lookup[name]["status"] = status
 
-        update_lookup(lookup, os.path.dirname(self.workspace.h5file))
+        _ = self.update_lookup(lookup)
 
     def run(self):
         """Execute a sweep."""
 
-        ifile = InputFile.read_ui_json(self.params.worker_uijson)
-        with ifile.data["geoh5"].open(mode="r") as workspace:
-            sets = self.params.parameter_sets()
-            iterations = list(itertools.product(*sets.values()))
-            print(
-                f"Running parameter sweep for {len(iterations)} "
-                f"trials of the {ifile.data['title']} driver."
+        lookup_path = os.path.join(self.working_directory, "lookup.json")
+        with open(lookup_path, encoding="utf8") as file:
+            lookup = json.load(file)
+
+        for name, trial in lookup.items():
+            ifile = InputFile.read_ui_json(
+                os.path.join(self.working_directory, f"{name}.ui.json")
             )
-
-            param_lookup = {}
-            for count, iteration in enumerate(iterations):
-                param_uuid = SweepDriver.uuid_from_params(iteration)
-                filepath = os.path.join(
-                    os.path.dirname(workspace.h5file), f"{param_uuid}.ui.geoh5"
-                )
-                param_lookup[param_uuid] = dict(zip(sets.keys(), iteration))
-
-                if os.path.exists(filepath):
-                    print(
-                        f"{count}: Skipping trial: {param_uuid}. "
-                        f"Already computed and saved to file."
-                    )
-                    continue
-
-                print(
-                    f"{count}: Running trial: {param_uuid}. "
-                    f"Use lookup.json to map uuid to parameter set."
-                )
-                with Workspace(filepath) as iter_workspace:
-                    ifile.data.update(
-                        dict(param_lookup[param_uuid], **{"geoh5": iter_workspace})
-                    )
-                    objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
-                    for obj in objects:
-                        if not isinstance(obj, Data):
-                            obj.copy(parent=iter_workspace, copy_children=True)
-
-                update_lookup(param_lookup, workspace)
-
-                ifile.name = f"{param_uuid}.ui.json"
-                ifile.path = os.path.dirname(workspace.h5file)
-                ifile.write_ui_json()
-
-                if not files_only:
-                    call_worker_subprocess(ifile)
+            status = trial.pop("status")
+            if status != "complete":
+                lookup[name]["status"] = "processing"
+                self.update_lookup(lookup)
+                call_worker_subprocess(ifile)
+                lookup[name]["status"] = "complete"
+                self.update_lookup(lookup)
 
 
 def call_worker_subprocess(ifile: InputFile):
@@ -212,19 +191,6 @@ def call_worker_subprocess(ifile: InputFile):
         ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
         check=True,
     )
-
-
-def update_lookup(lookup: dict, working_directory: str):
-    """Updates lookup with new entries. Ensures any previous runs are incorporated."""
-    lookup_path = os.path.join(working_directory, "lookup.json")
-    if os.path.exists(lookup_path):  # In case restarting
-        with open(lookup_path, encoding="utf8") as file:
-            lookup.update(json.load(file))
-
-    with open(lookup_path, "w", encoding="utf8") as file:
-        json.dump(lookup, file, indent=4)
-
-    return lookup
 
 
 def file_validation(filepath):
@@ -240,16 +206,14 @@ def file_validation(filepath):
         raise OSError(f"File argument {filepath} must have extension 'ui.json'.")
 
 
-def main(file_path, files_only=False):
+def main(file_path):
     """Run the program."""
 
     file_validation(file_path)
     print("Reading parameters and workspace...")
-    # if "_sweep" not in file_path:
-    #     file_path = file_path.replace(".ui.json", "_sweep.ui.json")
     input_file = InputFile.read_ui_json(file_path)
     sweep_params = SweepParams.from_input_file(input_file)
-    SweepDriver(sweep_params).run(files_only)
+    SweepDriver(sweep_params).run()
 
 
 if __name__ == "__main__":
