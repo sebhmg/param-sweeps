@@ -224,4 +224,4 @@ if __name__ == "__main__":
     parser.add_argument("file", help="File with ui.json format.")
 
     args = parser.parse_args()
-    main(args.file)
+    main(os.path.abspath(args.file))
