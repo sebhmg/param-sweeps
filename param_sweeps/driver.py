@@ -215,7 +215,7 @@ def call_worker_subprocess(ifile: InputFile):
         if process.stderr:
             err_message = process.stderr.read().decode()
             if process.returncode != 0:
-                print(err_message)
+                raise ValueError(err_message)
         if process.stdout:
             print(process.stdout.read().decode())
     # while True:
