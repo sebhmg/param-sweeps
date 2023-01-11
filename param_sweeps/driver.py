@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import argparse
 import itertools
 import json
@@ -187,36 +188,36 @@ class SweepDriver:
 def call_worker_subprocess(ifile: InputFile):
     """Runs the worker for the sweep parameters contained in 'ifile'."""
 
-    # conda_env = ifile.data["conda_environment"]
-    # run_cmd = ifile.data["run_command"]
+    conda_env = ifile.data["conda_environment"]
+    run_cmd = ifile.data["run_command"]
 
     # subprocess.run(
     #     ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
     #     check=True,
     # )
 
-    from geoapps.inversion.electricals.direct_current.two_dimensions.driver import (
-        DirectCurrent2DDriver,
-    )
-    from geoapps.inversion.electricals.direct_current.two_dimensions.params import (
-        DirectCurrent2DParams,
-    )
-
-    params = DirectCurrent2DParams(ifile)
-    driver = DirectCurrent2DDriver(params)
-    driver.run()
-
-    # with subprocess.Popen(
-    #     ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
-    #     stdout=subprocess.PIPE,
-    #     stderr=subprocess.PIPE,
-    # ) as process:
-    #     if process.stderr:
-    #         err_message = process.stderr.read().decode()
-    #         if process.returncode != 0:
-    #             raise ValueError(err_message)
-    #     if process.stdout:
-    #         print(process.stdout.read().decode())
+    # from geoapps.inversion.electricals.direct_current.two_dimensions.driver import (
+    #     DirectCurrent2DDriver,
+    # )
+    # from geoapps.inversion.electricals.direct_current.two_dimensions.params import (
+    #     DirectCurrent2DParams,
+    # )
+    #
+    # params = DirectCurrent2DParams(ifile)
+    # driver = DirectCurrent2DDriver(params)
+    # driver.run()
+    print(conda_env)
+    with subprocess.Popen(
+        ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    ) as process:
+        if process.stderr:
+            err_message = process.stderr.read().decode()
+            if process.returncode != 0:
+                raise ValueError(err_message)
+        if process.stdout:
+            print(process.stdout.read().decode())
 
     # while True:
     #     output = process.stdout.readline()
