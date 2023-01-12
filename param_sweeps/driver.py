@@ -7,8 +7,8 @@
 
 from __future__ import annotations
 
-import subprocess
 import argparse
+import importlib
 import itertools
 import json
 import os
@@ -180,53 +180,25 @@ class SweepDriver:
             if status != "complete":
                 lookup[name]["status"] = "processing"
                 self.update_lookup(lookup)
-                call_worker_subprocess(ifile)
+                call_worker(ifile)
                 lookup[name]["status"] = "complete"
                 self.update_lookup(lookup)
 
 
-def call_worker_subprocess(ifile: InputFile):
+def call_worker(ifile: InputFile):
     """Runs the worker for the sweep parameters contained in 'ifile'."""
 
-    conda_env = ifile.data["conda_environment"]
     run_cmd = ifile.data["run_command"]
+    module = importlib.import_module(run_cmd)
+    drivers = [getattr(module, k) for k in module.__dict__ if "Driver" in k]
+    if len(drivers) > 1:
+        driver = [
+            k for k in drivers if k.__name__ not in ["BaseDriver", "InversionDriver"]
+        ][0]
+    else:
+        driver = drivers[0]
 
-    # subprocess.run(
-    #     ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
-    #     check=True,
-    # )
-
-    # from geoapps.inversion.electricals.direct_current.two_dimensions.driver import (
-    #     DirectCurrent2DDriver,
-    # )
-    # from geoapps.inversion.electricals.direct_current.two_dimensions.params import (
-    #     DirectCurrent2DParams,
-    # )
-    #
-    # params = DirectCurrent2DParams(ifile)
-    # driver = DirectCurrent2DDriver(params)
-    # driver.run()
-    print(conda_env)
-    with subprocess.Popen(
-        ["conda", "run", "-n", conda_env, "python", "-m", run_cmd, ifile.path_name],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    ) as process:
-        if process.stderr:
-            err_message = process.stderr.read().decode()
-            if process.returncode != 0:
-                raise ValueError(err_message)
-        if process.stdout:
-            print(process.stdout.read().decode())
-
-    # while True:
-    #     output = process.stdout.readline()
-    #     if output == '' and process.poll() is not None:
-    #         break
-    #     if output:
-    #         print(output.strip())
-    # rc = process.poll()
-    # return rc
+    driver.start(ifile.path_name)
 
 
 def file_validation(filepath):
