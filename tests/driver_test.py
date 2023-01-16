@@ -113,7 +113,7 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
     }
     ui_json = dict(ui_json, **deepcopy(default_ui_json))
     ui_json["geoh5"] = workspace
-    ui_json["run_command"] = "param_sweeps.sample_worker"
+    ui_json["run_command"] = "param_sweeps.sample_driver"
     ifile = InputFile(
         ui_json=ui_json,
         data={k: v["value"] if isinstance(v, dict) else v for k, v in ui_json.items()},
