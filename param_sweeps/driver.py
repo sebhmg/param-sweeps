@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import inspect
 import itertools
 import json
 import os
@@ -190,14 +191,12 @@ def call_worker(ifile: InputFile):
 
     run_cmd = ifile.data["run_command"]
     module = importlib.import_module(run_cmd)
-    drivers = [getattr(module, k) for k in module.__dict__ if "Driver" in k]
-    if len(drivers) > 1:
-        driver = [
-            k for k in drivers if k.__name__ not in ["BaseDriver", "InversionDriver"]
-        ][0]
-    else:
-        driver = drivers[0]
-
+    filt = (
+        lambda member: inspect.isclass(member)
+        and member.__module__ == run_cmd
+        and hasattr(member, "run")
+    )
+    driver = inspect.getmembers(module, filt)[0][1]
     driver.start(ifile.path_name)
 
 
