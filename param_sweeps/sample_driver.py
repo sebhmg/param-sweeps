@@ -34,6 +34,7 @@ class SampleDriver:
     @classmethod
     def start(cls, filepath, driver_class=None):
         _ = driver_class
+        print(filepath)
         ifile = InputFile.read_ui_json(filepath)
         params = SampleParams(ifile)
         SampleDriver(params).run()
