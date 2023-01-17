@@ -143,26 +143,28 @@ class SweepDriver:
 
             for name, trial in lookup.items():
 
-                status = trial.pop("status")
-                if status == "pending":
-                    filepath = os.path.join(
-                        os.path.dirname(workspace.h5file), f"{name}.ui.geoh5"
-                    )
-                    with Workspace(filepath) as iter_workspace:
-                        ifile.data.update(
-                            dict(lookup[name], **{"geoh5": iter_workspace})
-                        )
-                        objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
-                        for obj in objects:
-                            if not isinstance(obj, Data):
-                                obj.copy(parent=iter_workspace, copy_children=True)
+                if trial["status"] != "pending":
+                    continue
 
-                    ifile.name = f"{name}.ui.json"
-                    ifile.path = os.path.dirname(workspace.h5file)
-                    ifile.write_ui_json()
-                    lookup[name]["status"] = "written"
-                else:
-                    lookup[name]["status"] = status
+                filepath = os.path.join(
+                    os.path.dirname(workspace.h5file), f"{name}.ui.geoh5"
+                )
+                with Workspace(filepath) as iter_workspace:
+                    ifile.data.update(
+                        dict(
+                            {key: val for key, val in trial.items() if key != "status"},
+                            **{"geoh5": iter_workspace},
+                        )
+                    )
+                    objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
+                    for obj in objects:
+                        if not isinstance(obj, Data):
+                            obj.copy(parent=iter_workspace, copy_children=True)
+
+                ifile.name = f"{name}.ui.json"
+                ifile.path = os.path.dirname(workspace.h5file)
+                ifile.write_ui_json()
+                lookup[name]["status"] = "written"
 
         _ = self.update_lookup(lookup)
 
