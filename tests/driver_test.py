@@ -46,17 +46,6 @@ def test_params(tmp_path):
     assert psets["param1"] == [1, 2]
 
 
-# def test_update_lookup(tmp_path):
-#     workspace = Workspace(os.path.join(tmp_path, "test.geoh5"))
-#     test = {"first entry": {"param1": 2, "param2": 1}}
-#     with open(os.path.join(tmp_path, "lookup.json"), "w", encoding="utf-8") as file:
-#         json.dump(test, file, ensure_ascii=False, indent=4)
-#
-#     lookup = {"second entry": {"param1": 1, "param2": 2}}
-#     new_lookup = update_lookup(lookup, workspace)
-#     assert new_lookup == dict(test, **lookup)
-
-
 def test_uuid_from_params():
     test = {"a": [1, 2], "b": [3, 4], "c": [5, 6]}
     iterations = list(itertools.product(*test.values()))
