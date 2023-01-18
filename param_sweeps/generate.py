@@ -17,7 +17,11 @@ from geoh5py.ui_json import InputFile
 from param_sweeps.constants import default_ui_json
 
 
-def generate(worker: str, parameters: list[str] = None, update_values: dict = None):
+def generate(
+    worker: str,
+    parameters: list[str] | None = None,
+    update_values: dict | None = None,
+):
     """
     Generate an *_sweep.ui.json file to sweep parameters of the driver associated with 'file'.
 
