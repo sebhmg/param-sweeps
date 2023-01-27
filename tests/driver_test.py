@@ -1,4 +1,4 @@
-#  Copyright (c) 2022 Mira Geoscience Ltd.
+#  Copyright (c) 2023 Mira Geoscience Ltd.
 #
 #  This file is part of param-sweeps.
 #
@@ -17,13 +17,7 @@ from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
 
 from param_sweeps.constants import default_ui_json
-from param_sweeps.driver import (
-    SweepDriver,
-    SweepParams,
-    file_validation,
-    main,
-    update_lookup,
-)
+from param_sweeps.driver import SweepDriver, SweepParams, file_validation, main
 from param_sweeps.generate import generate
 
 
@@ -41,7 +35,6 @@ def test_params(tmp_path):
     )
     ifile = InputFile(ui_json=test)
     params = SweepParams.from_input_file(ifile)
-    _ = SweepDriver(params)
 
     assert os.path.split(params.worker_uijson)[-1] == "worker.ui.json"
     worker_params = params.worker_parameters()
@@ -51,17 +44,6 @@ def test_params(tmp_path):
     assert len(psets) == 1
     assert "param1" in psets
     assert psets["param1"] == [1, 2]
-
-
-def test_update_lookup(tmp_path):
-    workspace = Workspace(os.path.join(tmp_path, "test.geoh5"))
-    test = {"first entry": {"param1": 2, "param2": 1}}
-    with open(os.path.join(tmp_path, "lookup.json"), "w", encoding="utf-8") as file:
-        json.dump(test, file, ensure_ascii=False, indent=4)
-
-    lookup = {"second entry": {"param1": 1, "param2": 2}}
-    new_lookup = update_lookup(lookup, workspace)
-    assert new_lookup == dict(test, **lookup)
 
 
 def test_uuid_from_params():
@@ -120,7 +102,7 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
     }
     ui_json = dict(ui_json, **deepcopy(default_ui_json))
     ui_json["geoh5"] = workspace
-    ui_json["run_command"] = "param_sweeps.sample_worker"
+    ui_json["run_command"] = "param_sweeps.sample_driver"
     ifile = InputFile(
         ui_json=ui_json,
         data={k: v["value"] if isinstance(v, dict) else v for k, v in ui_json.items()},
@@ -141,7 +123,7 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
         json.dump(uijson, file, indent=4)
 
     workspace.close()
-    main(sweep_path, files_only=True)
+    main(sweep_path)
     workspace.open()
 
     with open(os.path.join(tmp_path, "lookup.json"), encoding="utf-8") as file:

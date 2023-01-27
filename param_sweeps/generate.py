@@ -1,4 +1,4 @@
-#  Copyright (c) 2022 Mira Geoscience Ltd.
+#  Copyright (c) 2023 Mira Geoscience Ltd.
 #
 #  This file is part of param-sweeps.
 #
@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 from copy import deepcopy
 
 from geoh5py.ui_json import InputFile
@@ -16,7 +17,11 @@ from geoh5py.ui_json import InputFile
 from param_sweeps.constants import default_ui_json
 
 
-def generate(worker: str, parameters: list[str] = None, update_values: dict = None):
+def generate(
+    worker: str,
+    parameters: list[str] | None = None,
+    update_values: dict | None = None,
+):
     """
     Generate an *_sweep.ui.json file to sweep parameters of the driver associated with 'file'.
 
@@ -47,7 +52,8 @@ def generate(worker: str, parameters: list[str] = None, update_values: dict = No
     dirname = os.path.dirname(file)
     filename = os.path.basename(file)
     filename = filename.rstrip("ui.json")
-    filename = filename.rstrip("_sweep")
+    filename = re.sub(r"\._sweep$", "", filename)
+    # filename = filename.rstrip("_sweep")
     filename = f"{filename}_sweep.ui.json"
 
     print(f"Writing sweep file to: {os.path.join(dirname, filename)}")
