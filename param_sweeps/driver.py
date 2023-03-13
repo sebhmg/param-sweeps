@@ -140,9 +140,7 @@ class SweepDriver:
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
         with ifile.data["geoh5"].open(mode="r") as workspace:
-
             for name, trial in lookup.items():
-
                 if trial["status"] != "pending":
                     continue
 
@@ -226,7 +224,6 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Run parameter sweep of worker driver."
     )
