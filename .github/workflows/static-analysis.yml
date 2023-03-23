@@ -24,9 +24,9 @@ jobs:
       POETRY_VIRTUALENVS_CREATE: true
       POETRY_VIRTUALENVS_IN_PROJECT: true
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python version
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.9
     - name: Get full Python version
@@ -38,7 +38,7 @@ jobs:
         curl -sSL https://install.python-poetry.org | POETRY_HOME=$HOME/.poetry python -
         echo "$HOME/.poetry/bin" >> $GITHUB_PATH
     - name: Set up cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: cache
       env:
         # Increase this value to reset cache if poetry.lock has not changed
