@@ -57,7 +57,6 @@ def test_uuid_from_params():
 
 
 def test_file_validation(tmp_path):
-
     filepath = os.path.join(tmp_path, "test.json")
     open(filepath, "w", encoding="utf-8").close()  # pylint: disable=R1732
     with pytest.raises(OSError) as excinfo:
@@ -76,7 +75,6 @@ def test_file_validation(tmp_path):
 
 
 def test_sweep(tmp_path):  # pylint: disable=R0914
-
     geoh5_path = os.path.join(tmp_path, "test.geoh5")
     uijson_path = geoh5_path.replace(".geoh5", ".ui.json")
     sweep_path = uijson_path.replace(".ui", "_sweep.ui")
