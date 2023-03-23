@@ -16,6 +16,7 @@ import os
 import uuid
 from dataclasses import dataclass
 from inspect import signature
+from typing import Any
 
 import numpy as np
 from geoh5py.data import Data
@@ -192,7 +193,7 @@ def call_worker(ifile: InputFile):
     run_cmd = ifile.data["run_command"]
     module = importlib.import_module(run_cmd)
 
-    def filt(member) -> bool:
+    def filt(member: Any) -> bool:
         return (
             inspect.isclass(member)
             and member.__module__ == run_cmd
