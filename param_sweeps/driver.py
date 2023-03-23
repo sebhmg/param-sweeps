@@ -191,11 +191,14 @@ def call_worker(ifile: InputFile):
 
     run_cmd = ifile.data["run_command"]
     module = importlib.import_module(run_cmd)
-    filt = (
-        lambda member: inspect.isclass(member)
-        and member.__module__ == run_cmd
-        and hasattr(member, "run")
-    )
+
+    def filt(member) -> bool:
+        return (
+            inspect.isclass(member)
+            and member.__module__ == run_cmd
+            and hasattr(member, "run")
+        )
+
     driver = inspect.getmembers(module, filt)[0][1]
     driver.start(ifile.path_name)
 
