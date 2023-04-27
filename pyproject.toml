@@ -24,8 +24,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11"
-# geoh5py = "~0.7.0"
-geoh5py = {url = "https://github.com/MiraGeoscience/geoh5py/archive/refs/heads/GEOPY-715.zip#sha256=None"}
+geoh5py = "~0.8.0a1"
+# geoh5py = {url = "https://github.com/MiraGeoscience/geoh5py/archive/refs/heads/GEOPY-715.zip#sha256=None"}
 numpy = "!=1.19.4, ~1.23.5"
 
 
