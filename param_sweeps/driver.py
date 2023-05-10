@@ -12,10 +12,10 @@ import importlib
 import inspect
 import itertools
 import json
-import os
 import uuid
 from dataclasses import dataclass
 from inspect import signature
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -44,7 +44,7 @@ class SweepParams:
         cls_fields = list(signature(cls).parameters)
         base_params, app_params = {}, {}
 
-        for param, value in ifile.data.items():
+        for param, value in ifile.plain_data.items():
             if param in cls_fields:
                 base_params[param] = value
             else:
@@ -94,8 +94,11 @@ class SweepDriver:
 
     def __init__(self, params):
         self.params: SweepParams = params
-        self.workspace = params.geoh5
-        self.working_directory = os.path.dirname(self.workspace.h5file)
+        if isinstance(params.geoh5, Workspace):
+            self.workspace = params.geoh5
+        else:
+            self.workspace = Workspace(params.geoh5, mode="r")
+        self.working_directory = str(Path(self.workspace.h5file).parent)
         lookup = self.get_lookup()
         self.write_files(lookup)
 
@@ -126,8 +129,8 @@ class SweepDriver:
 
     def update_lookup(self, lookup: dict, gather_first: bool = False):
         """Updates lookup with new entries. Ensures any previous runs are incorporated."""
-        lookup_path = os.path.join(self.working_directory, "lookup.json")
-        if os.path.exists(lookup_path) and gather_first:  # In case restarting
+        lookup_path = Path(self.working_directory) / "lookup.json"
+        if lookup_path.is_file() and gather_first:  # In case restarting
             with open(lookup_path, encoding="utf8") as file:
                 lookup.update(json.load(file))
 
@@ -145,9 +148,7 @@ class SweepDriver:
                 if trial["status"] != "pending":
                     continue
 
-                filepath = os.path.join(
-                    os.path.dirname(workspace.h5file), f"{name}.ui.geoh5"
-                )
+                filepath = Path(workspace.h5file).parent / f"{name}.ui.geoh5"
                 with Workspace(filepath) as iter_workspace:
                     ifile.data.update(
                         dict(
@@ -161,7 +162,7 @@ class SweepDriver:
                             obj.copy(parent=iter_workspace, copy_children=True)
 
                 ifile.name = f"{name}.ui.json"
-                ifile.path = os.path.dirname(workspace.h5file)
+                ifile.path = str(Path(workspace.h5file).parent)
                 ifile.write_ui_json()
                 lookup[name]["status"] = "written"
 
@@ -170,13 +171,13 @@ class SweepDriver:
     def run(self):
         """Execute a sweep."""
 
-        lookup_path = os.path.join(self.working_directory, "lookup.json")
+        lookup_path = Path(self.working_directory) / "lookup.json"
         with open(lookup_path, encoding="utf8") as file:
             lookup = json.load(file)
 
         for name, trial in lookup.items():
             ifile = InputFile.read_ui_json(
-                os.path.join(self.working_directory, f"{name}.ui.json")
+                str(Path(self.working_directory) / f"{name}.ui.json")
             )
             status = trial.pop("status")
             if status != "complete":
@@ -204,9 +205,9 @@ def call_worker(ifile: InputFile):
     driver.start(ifile.path_name)
 
 
-def file_validation(filepath):
+def file_validation(filepath: str):
     """Validate file."""
-    if filepath.endswith("ui.json"):
+    if filepath.endswith(".ui.json"):
         try:
             InputFile.read_ui_json(filepath)
         except BaseValidationError as err:
@@ -217,7 +218,7 @@ def file_validation(filepath):
         raise OSError(f"File argument {filepath} must have extension 'ui.json'.")
 
 
-def main(file_path):
+def main(file_path: str):
     """Run the program."""
 
     file_validation(file_path)
@@ -234,4 +235,4 @@ if __name__ == "__main__":
     parser.add_argument("file", help="File with ui.json format.")
 
     args = parser.parse_args()
-    main(os.path.abspath(args.file))
+    main(str(Path(args.file).resolve(strict=True)))
