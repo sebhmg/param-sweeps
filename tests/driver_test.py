@@ -7,8 +7,8 @@
 
 import itertools
 import json
-import os
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -21,8 +21,8 @@ from param_sweeps.driver import SweepDriver, SweepParams, file_validation, main
 from param_sweeps.generate import generate
 
 
-def test_params(tmp_path):
-    workspace = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
+def test_params(tmp_path: Path):
+    workspace = Workspace(tmp_path / "worker.ui.geoh5")
     test = deepcopy(default_ui_json)
     test.update(
         {
@@ -36,7 +36,7 @@ def test_params(tmp_path):
     ifile = InputFile(ui_json=test)
     params = SweepParams.from_input_file(ifile)
 
-    assert os.path.split(params.worker_uijson)[-1] == "worker.ui.json"
+    assert Path(params.worker_uijson).name == "worker.ui.json"
     worker_params = params.worker_parameters()
     assert len(worker_params) == 1
     assert worker_params[0] == "param1"
@@ -56,28 +56,28 @@ def test_uuid_from_params():
         ), "method is not deterministic"
 
 
-def test_file_validation(tmp_path):
-    filepath = os.path.join(tmp_path, "test.json")
+def test_file_validation(tmp_path: Path):
+    filepath = tmp_path / "test.json"
     open(filepath, "w", encoding="utf-8").close()  # pylint: disable=R1732
     with pytest.raises(OSError) as excinfo:
-        file_validation(filepath)
+        file_validation(str(filepath))
 
-    assert all(s in str(excinfo.value) for s in [filepath, "ui.json"])
+    assert all(s in str(excinfo.value) for s in [str(filepath), "ui.json"])
 
-    filepath = filepath.replace(".json", ".ui.json")
+    filepath = filepath.with_suffix(".ui.json")
     with open(filepath, "w", encoding="utf-8") as file:
         json.dump({}, file)
 
     with pytest.raises(OSError) as excinfo:
-        file_validation(filepath)
+        file_validation(str(filepath))
 
-    assert all(s in str(excinfo.value) for s in [filepath, "not a valid"])
+    assert all(s in str(excinfo.value) for s in [str(filepath), "not a valid"])
 
 
-def test_sweep(tmp_path):  # pylint: disable=R0914
-    geoh5_path = os.path.join(tmp_path, "test.geoh5")
-    uijson_path = geoh5_path.replace(".geoh5", ".ui.json")
-    sweep_path = uijson_path.replace(".ui", "_sweep.ui")
+def test_sweep(tmp_path: Path):  # pylint: disable=R0914
+    geoh5_path = tmp_path / "test.geoh5"
+    uijson_path = geoh5_path.with_suffix(".ui.json")
+    sweep_path = geoh5_path.parent / f"{geoh5_path.stem}_sweep.ui.json"
 
     workspace = Workspace(geoh5_path)
     locs = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]])
@@ -107,7 +107,7 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
     )
     ifile.write_ui_json("test.ui.json", path=tmp_path)
 
-    generate(uijson_path, parameters=["param"])
+    generate(str(uijson_path), parameters=["param"])
 
     with open(sweep_path, encoding="utf-8") as file:
         uijson = json.load(file)
@@ -121,18 +121,18 @@ def test_sweep(tmp_path):  # pylint: disable=R0914
         json.dump(uijson, file, indent=4)
 
     workspace.close()
-    main(sweep_path)
+    main(str(sweep_path))
     workspace.open()
 
-    with open(os.path.join(tmp_path, "lookup.json"), encoding="utf-8") as file:
+    with open(tmp_path / "lookup.json", encoding="utf-8") as file:
         lookup = json.load(file)
 
-    assert all(os.path.exists(os.path.join(tmp_path, f"{k}.ui.geoh5")) for k in lookup)
-    assert all(os.path.exists(os.path.join(tmp_path, f"{k}.ui.json")) for k in lookup)
+    assert all((tmp_path / f"{k}.ui.geoh5").exists() for k in lookup)
+    assert all((tmp_path / f"{k}.ui.json").exists() for k in lookup)
     assert len(lookup.values()) == 2
     assert all(k["param"] in [1, 2] for k in lookup.values())
 
     for file_root in lookup:
-        file_ws = Workspace(os.path.join(tmp_path, f"{file_root}.ui.geoh5"))
+        file_ws = Workspace(tmp_path / f"{file_root}.ui.geoh5")
         data = file_ws.get_entity("data")[0]
         assert any("initial" in k.name for k in data.children)
