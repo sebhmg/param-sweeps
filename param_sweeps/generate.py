@@ -32,9 +32,7 @@ def generate(
 
     file_path = Path(worker).resolve(strict=True)
     ifile = InputFile.read_ui_json(str(file_path))
-    sweepfile = InputFile(
-        ui_json=deepcopy(default_ui_json), validation_options={"disabled": True}
-    )
+    sweepfile = InputFile(ui_json=deepcopy(default_ui_json), validate=False)
     sweepfile.data.update({"worker_uijson": str(worker)})
     if update_values:
         sweepfile.data.update(**update_values)

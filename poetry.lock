@@ -164,6 +164,7 @@ Pillow = ">=8.0.1,<10.0.0"
 [package.source]
 type = "url"
 url = "https://github.com/sebhmg/geoh5py/archive/refs/heads/GEOPY-947.zip#sha256=None"
+
 [[package]]
 name = "h5py"
 version = "3.8.0"
@@ -646,4 +647,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.11"
-content-hash = "689ddb384b8f66037a38c7b76f0f845aba6adf8c75bf137c5439a54e96adeb78"
+content-hash = "71b8461bff07bc52c2e691e55fe2cb3203e4389c3f750309564b62c6d2c737ec"
