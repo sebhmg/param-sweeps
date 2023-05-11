@@ -14,7 +14,6 @@ from geoh5py.ui_json import InputFile
 
 @dataclass
 class SampleParams:
-
     data_object: str | None = None
     data: str | None = None
     param: int = 1

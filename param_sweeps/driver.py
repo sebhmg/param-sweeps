@@ -16,6 +16,7 @@ import os
 import uuid
 from dataclasses import dataclass
 from inspect import signature
+from typing import Any
 
 import numpy as np
 from geoh5py.data import Data
@@ -140,9 +141,7 @@ class SweepDriver:
 
         ifile = InputFile.read_ui_json(self.params.worker_uijson)
         with ifile.data["geoh5"].open(mode="r") as workspace:
-
             for name, trial in lookup.items():
-
                 if trial["status"] != "pending":
                     continue
 
@@ -193,11 +192,14 @@ def call_worker(ifile: InputFile):
 
     run_cmd = ifile.data["run_command"]
     module = importlib.import_module(run_cmd)
-    filt = (
-        lambda member: inspect.isclass(member)
-        and member.__module__ == run_cmd
-        and hasattr(member, "run")
-    )
+
+    def filt(member: Any) -> bool:
+        return (
+            inspect.isclass(member)
+            and member.__module__ == run_cmd
+            and hasattr(member, "run")
+        )
+
     driver = inspect.getmembers(module, filt)[0][1]
     driver.start(ifile.path_name)
 
@@ -226,7 +228,6 @@ def main(file_path):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Run parameter sweep of worker driver."
     )
