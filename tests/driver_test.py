@@ -83,24 +83,26 @@ def test_sweep(tmp_path: Path):  # pylint: disable=R0914
     locs = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]])
     pts = Points.create(workspace, name="data", vertices=locs)
     dat = pts.add_data({"initial": {"values": np.ones(4, dtype=np.int32)}})
-    ui_json = {
-        "data_object": {
-            "label": "Object",
-            "meshType": "{202C5DB1-A56D-4004-9CAD-BAAFD8899406}",
-            "value": pts,
-        },
-        "data": {
-            "association": "Vertex",
-            "dataType": "Integer",
-            "label": "data",
-            "parent": "data_object",
-            "value": dat,
-        },
-        "param": {"label": "Add value", "value": 1},
-    }
-    ui_json = dict(ui_json, **deepcopy(default_ui_json))
-    ui_json["geoh5"] = workspace
-    ui_json["run_command"] = "param_sweeps.sample_driver"
+    ui_json = deepcopy(default_ui_json)
+    ui_json.update(
+        {
+            "geoh5": workspace,
+            "run_command": "param_sweeps.sample_driver",
+            "data_object": {
+                "label": "Object",
+                "meshType": "{202C5DB1-A56D-4004-9CAD-BAAFD8899406}",
+                "value": pts,
+            },
+            "data": {
+                "association": "Vertex",
+                "dataType": "Integer",
+                "label": "data",
+                "parent": "data_object",
+                "value": dat,
+            },
+            "param": {"label": "Add value", "value": 1},
+        }
+    )
     ifile = InputFile(
         ui_json=ui_json,
         data={k: v["value"] if isinstance(v, dict) else v for k, v in ui_json.items()},
