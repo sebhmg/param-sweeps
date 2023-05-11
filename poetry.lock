@@ -147,23 +147,23 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "geoh5py"
-version = "0.7.0-rc.5"
+version = "0.8.0-alpha.1"
 description = "Python API for geoh5, an open file format for geoscientific data"
 category = "main"
 optional = false
 python-versions = "^3.8,<3.11"
-files = []
-develop = true
+files = [
+    {file = "GEOPY-947.zip", hash = "sha256:37df4428950de6c9338fb0c5d2a57bc4482574432b90b500f9fbd23bf9066d75"},
+]
 
 [package.dependencies]
-h5py = "^3.2.1"
-numpy = "!=1.19.4, ~1.23.5"
+h5py = ">=3.2.1,<4.0.0"
+numpy = ">=1.23.5,<1.24.0"
 Pillow = ">=8.0.1,<10.0.0"
 
 [package.source]
-type = "directory"
-url = "../geoh5py"
-
+type = "url"
+url = "https://github.com/sebhmg/geoh5py/archive/refs/heads/GEOPY-947.zip#sha256=None"
 [[package]]
 name = "h5py"
 version = "3.8.0"
@@ -646,4 +646,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.11"
-content-hash = "a02c4335890c01c9b5a759364fe41718a52a3d9a30cca67404a9d90c7fa9544a"
+content-hash = "689ddb384b8f66037a38c7b76f0f845aba6adf8c75bf137c5439a54e96adeb78"
