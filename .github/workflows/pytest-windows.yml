@@ -22,7 +22,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_ver: [3.8, 3.9]
+        python_ver: ['3.8', '3.9', '3.10']
+
     defaults:
       run:
         shell: bash
@@ -31,9 +32,9 @@ jobs:
       POETRY_VIRTUALENVS_CREATE: true
       POETRY_VIRTUALENVS_IN_PROJECT: true
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python version
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python_ver }}
     - name: Get full Python version
@@ -44,7 +45,7 @@ jobs:
         curl -sSL https://install.python-poetry.org | POETRY_HOME=$HOME/.poetry python -
         echo "$HOME/.poetry/bin" >> $GITHUB_PATH
     - name: Set up cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: cache
       env:
         # Increase this value to reset cache if poetry.lock has not changed
@@ -60,7 +61,7 @@ jobs:
     - name: pytest
       run: poetry run pytest --cov-report=xml --cov=param_sweeps --cov-branch --cov-fail-under=85
     - name: Codecov
-      if: ${{ success() && matrix.python_ver == '3.7' }}
-      uses: codecov/codecov-action@v1
+      if: ${{ success() && matrix.python_ver == '3.10' }}
+      uses: codecov/codecov-action@v3
       with:
         name: GitHub

@@ -38,7 +38,6 @@ def generate(
         sweepfile.data.update(**update_values)
 
     for param, value in ifile.data.items():
-
         if parameters is not None and param not in parameters:
             continue
 
