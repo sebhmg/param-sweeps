@@ -92,7 +92,7 @@ class SweepParams:
 class SweepDriver:
     """Sweeps parameters of a worker driver."""
 
-    def __init__(self, params):
+    def __init__(self, params: SweepParams):
         self.params: SweepParams = params
         if isinstance(params.geoh5, Workspace):
             self.workspace = params.geoh5
@@ -177,7 +177,7 @@ class SweepDriver:
 
         for name, trial in lookup.items():
             ifile = InputFile.read_ui_json(
-                str(Path(self.working_directory) / f"{name}.ui.json")
+                Path(self.working_directory) / f"{name}.ui.json"
             )
             status = trial.pop("status")
             if status != "complete":
@@ -205,9 +205,9 @@ def call_worker(ifile: InputFile):
     driver.start(ifile.path_name)
 
 
-def file_validation(filepath: str):
+def file_validation(filepath: str | Path):
     """Validate file."""
-    if filepath.endswith(".ui.json"):
+    if "".join(Path(filepath).suffixes) == ".ui.json":
         try:
             InputFile.read_ui_json(filepath)
         except BaseValidationError as err:
@@ -218,7 +218,7 @@ def file_validation(filepath: str):
         raise OSError(f"File argument {filepath} must have extension 'ui.json'.")
 
 
-def main(file_path: str):
+def main(file_path: str | Path):
     """Run the program."""
 
     file_validation(file_path)
@@ -235,4 +235,4 @@ if __name__ == "__main__":
     parser.add_argument("file", help="File with ui.json format.")
 
     args = parser.parse_args()
-    main(str(Path(args.file).resolve(strict=True)))
+    main(Path(args.file).resolve(strict=True))

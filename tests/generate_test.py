@@ -32,7 +32,7 @@ def test_generate(tmp_path: Path):
         json.dump(test, file, indent=4)
 
     generate(str(path))
-    with open(tmp_path / "worker_sweep.ui.json", encoding="utf8") as file:
+    with open(path.parent / "worker_sweep.ui.json", encoding="utf8") as file:
         data = json.load(file)
 
     assert "param1_start" in data
@@ -49,11 +49,9 @@ def test_generate(tmp_path: Path):
     assert not data["param2_n"]["enabled"]
     assert data["param2_n"]["dependency"] == "param2_end"
 
-    generate(path, parameters=["param1"])
+    generate(str(path), parameters=["param1"])
 
-    with open(
-        path.parent / path.name.replace(".ui.json", "_sweep.ui.json"), encoding="utf8"
-    ) as file:
+    with open(path.parent / "worker_sweep.ui.json", encoding="utf8") as file:
         data = json.load(file)
 
     assert "param2_start" not in data

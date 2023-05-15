@@ -18,7 +18,7 @@ from param_sweeps.constants import default_ui_json
 
 
 def generate(
-    worker: str | Path,
+    worker: str,
     parameters: list[str] | None = None,
     update_values: dict | None = None,
 ):
@@ -31,7 +31,7 @@ def generate(
     """
 
     file_path = Path(worker).resolve(strict=True)
-    ifile = InputFile.read_ui_json(str(file_path))
+    ifile = InputFile.read_ui_json(file_path)
     sweepfile = InputFile(ui_json=deepcopy(default_ui_json), validate=False)
     sweepfile.data.update({"worker_uijson": str(worker)})
     if update_values:
@@ -46,15 +46,15 @@ def generate(
             sweepfile.ui_json.update(forms)
 
     sweepfile.data["geoh5"] = ifile.plain_data["geoh5"]
-    dirname = str(file_path.parent)
+    dirpath = file_path.parent
     filename = file_path.name
     filename = filename.rstrip("ui.json")
     filename = re.sub(r"\._sweep$", "", filename)
     # filename = filename.rstrip("_sweep")
     filename = f"{filename}_sweep.ui.json"
 
-    print(f"Writing sweep file to: {Path(dirname) / filename}")
-    sweepfile.write_ui_json(name=filename, path=dirname)
+    print(f"Writing sweep file to: {dirpath / filename}")
+    sweepfile.write_ui_json(name=filename, path=dirpath)
 
 
 def sweep_forms(param: str, value: int | float) -> dict:

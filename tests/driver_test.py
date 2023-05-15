@@ -60,7 +60,7 @@ def test_file_validation(tmp_path: Path):
     filepath = tmp_path / "test.json"
     open(filepath, "w", encoding="utf-8").close()  # pylint: disable=R1732
     with pytest.raises(OSError) as excinfo:
-        file_validation(str(filepath))
+        file_validation(filepath)
 
     assert all(s in str(excinfo.value) for s in [str(filepath), "ui.json"])
 
@@ -69,15 +69,15 @@ def test_file_validation(tmp_path: Path):
         json.dump({}, file)
 
     with pytest.raises(OSError) as excinfo:
-        file_validation(str(filepath))
+        file_validation(filepath)
 
     assert all(s in str(excinfo.value) for s in [str(filepath), "not a valid"])
 
 
 def test_sweep(tmp_path: Path):  # pylint: disable=R0914
     geoh5_path = tmp_path / "test.geoh5"
-    uijson_path = geoh5_path.with_suffix(".ui.json")
-    sweep_path = geoh5_path.parent / f"{geoh5_path.stem}_sweep.ui.json"
+    uijson_path = tmp_path / "test.ui.json"
+    sweep_path = tmp_path / "test_sweep.ui.json"
 
     workspace = Workspace(geoh5_path)
     locs = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]])
@@ -123,14 +123,14 @@ def test_sweep(tmp_path: Path):  # pylint: disable=R0914
         json.dump(uijson, file, indent=4)
 
     workspace.close()
-    main(str(sweep_path))
+    main(sweep_path)
     workspace.open()
 
     with open(tmp_path / "lookup.json", encoding="utf-8") as file:
         lookup = json.load(file)
 
-    assert all((tmp_path / f"{k}.ui.geoh5").exists() for k in lookup)
-    assert all((tmp_path / f"{k}.ui.json").exists() for k in lookup)
+    assert all((tmp_path / f"{k}.ui.geoh5").is_file() for k in lookup)
+    assert all((tmp_path / f"{k}.ui.json").is_file() for k in lookup)
     assert len(lookup.values()) == 2
     assert all(k["param"] in [1, 2] for k in lookup.values())
 
