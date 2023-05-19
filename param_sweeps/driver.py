@@ -29,13 +29,14 @@ from geoh5py.workspace import Workspace
 class SweepParams:
     """Parametrizes a sweep of the worker driver."""
 
-    title: str = "Parameter sweep"
-    run_command: str = "param_sweeps.driver"
-    conda_environment: str = "param_sweeps"
-    monitoring_directory: str | None = None
-    workspace_geoh5: Workspace | None = None
-    geoh5: Workspace | None = None
-    _worker_uijson: str | None = None
+    def __init__(self):
+        self.title: str = "Parameter sweep"
+        self.run_command: str = "param_sweeps.driver"
+        self.conda_environment: str = "param_sweeps"
+        self.monitoring_directory: str | None = None
+        self.workspace_geoh5: Workspace | None = None
+        self.geoh5: Workspace | None = None
+        self._worker_uijson: str | None = None
 
     @classmethod
     def from_input_file(cls, ifile: InputFile):
