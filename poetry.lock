@@ -138,14 +138,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "geoh5py"
-version = "0.8.0a2"
+version = "0.8.0a2.dev1"
 description = "Python API for geoh5, an open file format for geoscientific data"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.11"
 files = [
-    {file = "geoh5py-0.8.0a2-py3-none-any.whl", hash = "sha256:c152eb88d6ecf5a34d63de102c810349db10132d3d7467c73feed700e6406820"},
-    {file = "geoh5py-0.8.0a2.tar.gz", hash = "sha256:151a080900260c5775d511055f461ce8e38901f72098487ede4aecb5c22162c9"},
+    {file = "geoh5py-0.8.0a2.dev1-py3-none-any.whl", hash = "sha256:cc61921677dde96ee801b49c50ac98ab7ed8a6d30ec292e1831f88d497d61449"},
+    {file = "geoh5py-0.8.0a2.dev1.tar.gz", hash = "sha256:07bdfd8659ed956aa1833711d95710bfe233d77e0a46f2001306682161d5b9d4"},
 ]
 
 [package.dependencies]
@@ -644,4 +644,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.11"
-content-hash = "f61aeff10a9cd35323e09353ade564af45cbc351418b5c5b5d828a8ebc57a55f"
+content-hash = "f21e808d1af7f157212c71b77c76cfa6a77a25eabf83e80c285e0f93ce69b10f"
