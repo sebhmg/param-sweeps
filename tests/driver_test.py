@@ -26,7 +26,7 @@ def test_params(tmp_path: Path):
     test = deepcopy(default_ui_json)
     test.update(
         {
-            "geoh5": workspace.h5file,
+            "geoh5": workspace,
             "param1_start": {"label": "param1 start", "value": 1},
             "param1_end": {"label": "param1 end", "value": 2},
             "param1_n": {"label": "param1 n samples", "value": 2},

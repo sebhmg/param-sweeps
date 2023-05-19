@@ -44,7 +44,7 @@ class SweepParams:
         cls_fields = list(signature(cls).parameters)
         base_params, app_params = {}, {}
 
-        for param, value in ifile.plain_data.items():
+        for param, value in ifile.data.items():
             if param in cls_fields:
                 base_params[param] = value
             else:
@@ -94,10 +94,7 @@ class SweepDriver:
 
     def __init__(self, params: SweepParams):
         self.params: SweepParams = params
-        if isinstance(params.geoh5, Workspace):
-            self.workspace = params.geoh5
-        else:
-            self.workspace = Workspace(params.geoh5, mode="r")
+        self.workspace: Workspace = params.geoh5
         self.working_directory = str(Path(self.workspace.h5file).parent)
         lookup = self.get_lookup()
         self.write_files(lookup)

@@ -45,7 +45,7 @@ def generate(
             forms = sweep_forms(param, value)
             sweepfile.ui_json.update(forms)
 
-    sweepfile.data["geoh5"] = ifile.plain_data["geoh5"]
+    sweepfile.data["geoh5"] = ifile.data["geoh5"]
     dirpath = file_path.parent
     filename = file_path.name
     filename = filename.rstrip("ui.json")
