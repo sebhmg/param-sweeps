@@ -26,8 +26,7 @@ classifiers = [
 [[tool.poetry.source]]
 name = "test-pypi"
 url = "https://test.pypi.org/simple/"
-default = false
-secondary = false
+priority = "explicit"
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11"
@@ -37,7 +36,7 @@ geoh5py = {version = "~0.8.0a2", allow-prereleases = true}
 
 numpy = "!=1.19.4, ~1.23.5"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pylint = "*"
 pytest = "*"
 pytest-cov = "*"
