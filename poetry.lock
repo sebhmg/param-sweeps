@@ -2,14 +2,14 @@
 
 [[package]]
 name = "astroid"
-version = "2.15.4"
+version = "2.15.5"
 description = "An abstract syntax tree for Python with inference support."
 category = "dev"
 optional = false
 python-versions = ">=3.7.2"
 files = [
-    {file = "astroid-2.15.4-py3-none-any.whl", hash = "sha256:a1b8543ef9d36ea777194bc9b17f5f8678d2c56ee6a45b2c2f17eec96f242347"},
-    {file = "astroid-2.15.4.tar.gz", hash = "sha256:c81e1c7fbac615037744d067a9bb5f9aeb655edf59b63ee8b59585475d6f80d8"},
+    {file = "astroid-2.15.5-py3-none-any.whl", hash = "sha256:078e5212f9885fa85fbb0cf0101978a336190aadea6e13305409d099f71b2324"},
+    {file = "astroid-2.15.5.tar.gz", hash = "sha256:1039262575027b441137ab4a62a793a9b43defb42c32d5670f38686207cd780f"},
 ]
 
 [package.dependencies]
@@ -138,14 +138,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "geoh5py"
-version = "0.8.0a2.dev1"
+version = "0.8.0a2"
 description = "Python API for geoh5, an open file format for geoscientific data"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.11"
 files = [
-    {file = "geoh5py-0.8.0a2.dev1-py3-none-any.whl", hash = "sha256:cc61921677dde96ee801b49c50ac98ab7ed8a6d30ec292e1831f88d497d61449"},
-    {file = "geoh5py-0.8.0a2.dev1.tar.gz", hash = "sha256:07bdfd8659ed956aa1833711d95710bfe233d77e0a46f2001306682161d5b9d4"},
+    {file = "geoh5py-0.8.0a2-py3-none-any.whl", hash = "sha256:c152eb88d6ecf5a34d63de102c810349db10132d3d7467c73feed700e6406820"},
+    {file = "geoh5py-0.8.0a2.tar.gz", hash = "sha256:151a080900260c5775d511055f461ce8e38901f72098487ede4aecb5c22162c9"},
 ]
 
 [package.dependencies]
@@ -546,14 +546,14 @@ files = [
 
 [[package]]
 name = "typing-extensions"
-version = "4.5.0"
+version = "4.6.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
 category = "dev"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "typing_extensions-4.5.0-py3-none-any.whl", hash = "sha256:fb33085c39dd998ac16d1431ebc293a8b3eedd00fd4a32de0ff79002c19511b4"},
-    {file = "typing_extensions-4.5.0.tar.gz", hash = "sha256:5cb5f4a79139d699607b3ef622a1dedafa84e115ab0024e0d9c044a9479ca7cb"},
+    {file = "typing_extensions-4.6.0-py3-none-any.whl", hash = "sha256:6ad00b63f849b7dcc313b70b6b304ed67b2b2963b3098a33efe18056b1a9a223"},
+    {file = "typing_extensions-4.6.0.tar.gz", hash = "sha256:ff6b238610c747e44c268aa4bb23c8c735d665a63726df3f9431ce707f2aa768"},
 ]
 
 [[package]]
@@ -644,4 +644,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.11"
-content-hash = "f21e808d1af7f157212c71b77c76cfa6a77a25eabf83e80c285e0f93ce69b10f"
+content-hash = "c99edb84e0260a411e181ec5e53445e249740a0d6cdff82d4f21a4dfa713d1c7"
