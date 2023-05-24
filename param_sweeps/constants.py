@@ -5,7 +5,11 @@
 #  param-sweeps is distributed under the terms and conditions of the MIT License
 #  (see LICENSE file at the root of this source code package).
 
-default_ui_json = {
+from __future__ import annotations
+
+from typing import Any
+
+default_ui_json: dict[str, Any] = {
     "title": "Parameter sweep",
     "worker_uijson": None,
     "run_command": "param_sweeps.driver",

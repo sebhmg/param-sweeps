@@ -24,7 +24,6 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python_ver: ['3.8', '3.9', '3.10']
-
     defaults:
       run:
         shell: bash
