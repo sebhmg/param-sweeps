@@ -8,9 +8,9 @@
 from __future__ import annotations
 
 import argparse
-import os
 import re
 from copy import deepcopy
+from pathlib import Path
 
 from geoh5py.ui_json import InputFile
 
@@ -30,10 +30,10 @@ def generate(
     :param update_values: Updates for sweep files parameters
     """
 
-    file = os.path.abspath(worker)
-    ifile = InputFile.read_ui_json(file)
+    file_path = Path(worker).resolve(strict=True)
+    ifile = InputFile.read_ui_json(file_path)
     sweepfile = InputFile(ui_json=deepcopy(default_ui_json), validate=False)
-    sweepfile.data.update({"worker_uijson": worker})
+    sweepfile.data.update({"worker_uijson": str(worker)})
     if update_values:
         sweepfile.data.update(**update_values)
 
@@ -46,15 +46,15 @@ def generate(
             sweepfile.ui_json.update(forms)
 
     sweepfile.data["geoh5"] = ifile.data["geoh5"]
-    dirname = os.path.dirname(file)
-    filename = os.path.basename(file)
+    dirpath = file_path.parent
+    filename = file_path.name
     filename = filename.rstrip("ui.json")
     filename = re.sub(r"\._sweep$", "", filename)
     # filename = filename.rstrip("_sweep")
     filename = f"{filename}_sweep.ui.json"
 
-    print(f"Writing sweep file to: {os.path.join(dirname, filename)}")
-    sweepfile.write_ui_json(name=filename, path=dirname)
+    print(f"Writing sweep file to: {dirpath / filename}")
+    sweepfile.write_ui_json(name=filename, path=dirpath)
 
 
 def sweep_forms(param: str, value: int | float) -> dict:
