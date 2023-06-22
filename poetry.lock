@@ -138,13 +138,14 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "geoh5py"
-version = "0.8.0-alpha.2"
+version = "0.8.0a3"
 description = "Python API for geoh5, an open file format for geoscientific data"
 category = "main"
 optional = false
-python-versions = "^3.8,<3.11"
+python-versions = ">=3.8,<3.11"
 files = [
-    {file = "GEOPY-241.zip", hash = "sha256:d121a01e1289b979c69e4d039f551466585fcffa2720ac7089f0456c828cf7bd"},
+    {file = "geoh5py-0.8.0a3-py3-none-any.whl", hash = "sha256:0c612491fff8972882658e5283b649cc4deadb7d83804ea2b5f4969bb05a89be"},
+    {file = "geoh5py-0.8.0a3.tar.gz", hash = "sha256:27c84dee8f2560129b6e4fc46bebc25a2819021572115eafaee884d6540f49b7"},
 ]
 
 [package.dependencies]
@@ -153,8 +154,10 @@ numpy = ">=1.23.5,<1.24.0"
 Pillow = ">=8.0.1,<10.0.0"
 
 [package.source]
-type = "url"
-url = "https://github.com/MiraGeoscience/geoh5py/archive/refs/heads/GEOPY-241.zip#sha256=None"
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "test-pypi"
+
 [[package]]
 name = "h5py"
 version = "3.8.0"
@@ -641,4 +644,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.11"
-content-hash = "1e6baf3f541549d2a9391ba807dc22483e63fa9d769799c098bbc101d57c5bfc"
+content-hash = "1e60da246754483e517327a36fbc53584eb057708360aeef989ce0a1f5b584d9"
