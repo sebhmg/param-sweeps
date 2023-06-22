@@ -157,7 +157,7 @@ class SweepDriver:
                     continue
 
                 filepath = Path(workspace.h5file).parent / f"{name}.ui.geoh5"
-                with Workspace().save(filepath) as iter_workspace:
+                with Workspace.create(filepath) as iter_workspace:
                     ifile.data.update(
                         dict(
                             {key: val for key, val in trial.items() if key != "status"},
