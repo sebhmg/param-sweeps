@@ -15,6 +15,7 @@ import json
 import uuid
 from dataclasses import dataclass
 from inspect import signature
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +44,9 @@ class SweepParams:
 
         cls_fields = list(signature(cls).parameters)
         base_params, app_params = {}, {}
+
+        if ifile.data is None:
+            raise ValueError("Input file data is empty.")
 
         for param, value in ifile.data.items():
             if param in cls_fields:
@@ -93,8 +97,15 @@ class SweepDriver:
     """Sweeps parameters of a worker driver."""
 
     def __init__(self, params: SweepParams):
+        if params.geoh5 is None:
+            raise ValueError("Workspace must be specified.")
+
         self.params: SweepParams = params
         self.workspace: Workspace = params.geoh5
+
+        if isinstance(self.workspace.h5file, BytesIO) or self.workspace.h5file is None:
+            raise ValueError("Workspace must be saved to disk.")
+
         self.working_directory = str(Path(self.workspace.h5file).parent)
         lookup = self.get_lookup()
         self.write_files(lookup)
@@ -146,7 +157,7 @@ class SweepDriver:
                     continue
 
                 filepath = Path(workspace.h5file).parent / f"{name}.ui.geoh5"
-                with Workspace(filepath) as iter_workspace:
+                with Workspace.create(filepath) as iter_workspace:
                     ifile.data.update(
                         dict(
                             {key: val for key, val in trial.items() if key != "status"},
@@ -187,6 +198,8 @@ class SweepDriver:
 
 def call_worker(ifile: InputFile):
     """Runs the worker for the sweep parameters contained in 'ifile'."""
+    if ifile.data is None:
+        raise ValueError("Input file data is empty.")
 
     run_cmd = ifile.data["run_command"]
     module = importlib.import_module(run_cmd)
