@@ -1,4 +1,4 @@
-#  Copyright (c) 2023 Mira Geoscience Ltd.
+#  Copyright (c) 2024 Mira Geoscience Ltd.
 #
 #  This file is part of param-sweeps.
 #
@@ -6,8 +6,8 @@
 #  (see LICENSE file at the root of this source code package).
 
 import json
-import os
 from copy import deepcopy
+from pathlib import Path
 
 from geoh5py.workspace import Workspace
 
@@ -15,24 +15,24 @@ from param_sweeps.constants import default_ui_json
 from param_sweeps.generate import generate, sweep_forms
 
 
-def test_generate(tmp_path):
-    workspace = Workspace(os.path.join(tmp_path, "worker.ui.geoh5"))
+def test_generate(tmp_path: Path):
+    workspace = Workspace(tmp_path / "worker.ui.geoh5")
 
     test = deepcopy(default_ui_json)
     test.update(
         {
-            "geoh5": workspace.h5file,
+            "geoh5": str(workspace.h5file),
             "param1": {"label": "param1", "value": 1},
             "param2": {"label": "param2", "value": 2.5},
         }
     )
 
-    path = os.path.join(tmp_path, "worker.ui.json")
+    path = tmp_path / "worker.ui.json"
     with open(path, "w", encoding="utf8") as file:
         json.dump(test, file, indent=4)
 
-    generate(path)
-    with open(path.replace(".ui.json", "_sweep.ui.json"), encoding="utf8") as file:
+    generate(str(path))
+    with open(path.parent / "worker_sweep.ui.json", encoding="utf8") as file:
         data = json.load(file)
 
     assert "param1_start" in data
@@ -49,9 +49,9 @@ def test_generate(tmp_path):
     assert not data["param2_n"]["enabled"]
     assert data["param2_n"]["dependency"] == "param2_end"
 
-    generate(path, parameters=["param1"])
+    generate(str(path), parameters=["param1"])
 
-    with open(path.replace(".ui.json", "_sweep.ui.json"), encoding="utf8") as file:
+    with open(path.parent / "worker_sweep.ui.json", encoding="utf8") as file:
         data = json.load(file)
 
     assert "param2_start" not in data
