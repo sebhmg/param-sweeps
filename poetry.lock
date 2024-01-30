@@ -27,11 +27,6 @@ files = [
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
 
-[package.source]
-type = "legacy"
-url = "https://test.pypi.org/simple"
-reference = "test-pypi"
-
 [[package]]
 name = "coverage"
 version = "7.2.5"
@@ -112,11 +107,6 @@ files = [
 [package.extras]
 graph = ["objgraph (>=1.7.2)"]
 
-[package.source]
-type = "legacy"
-url = "https://test.pypi.org/simple"
-reference = "test-pypi"
-
 [[package]]
 name = "exceptiongroup"
 version = "1.1.1"
@@ -133,24 +123,23 @@ test = ["pytest (>=6)"]
 
 [[package]]
 name = "geoh5py"
-version = "0.8.0"
+version = "0.9.0-alpha.1"
 description = "Python API for geoh5, an open file format for geoscientific data"
 optional = false
-python-versions = ">=3.8,<3.11"
-files = [
-    {file = "geoh5py-0.8.0-py3-none-any.whl", hash = "sha256:40736dd6e0db984e5d659a159ed834117f3c1e2366f9ad26d080763745d008dc"},
-    {file = "geoh5py-0.8.0.tar.gz", hash = "sha256:19cca7a3f8cf8dc93ed5b973e5b5f7a6228d158d5cd61ae8f2de37f477cd4c44"},
-]
+python-versions = "^3.8,<3.11"
+files = []
+develop = false
 
 [package.dependencies]
-h5py = ">=3.2.1,<4.0.0"
-numpy = ">=1.23.5,<1.24.0"
-Pillow = ">=10.0.1,<11.0.0"
+h5py = "^3.2.1"
+numpy = "!=1.19.4, ~1.23.5"
+Pillow = "^10.0.1"
 
 [package.source]
-type = "legacy"
-url = "https://test.pypi.org/simple"
-reference = "test-pypi"
+type = "git"
+url = "https://github.com/MiraGeoscience/geoh5py.git"
+reference = "develop"
+resolved_reference = "53a183cfcdd306e7a3d006d754294fed587e270f"
 
 [[package]]
 name = "h5py"
@@ -199,11 +188,6 @@ files = [
     {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
     {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://test.pypi.org/simple"
-reference = "test-pypi"
 
 [[package]]
 name = "isort"
@@ -627,4 +611,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8,<3.11"
-content-hash = "3d0603840e885a4d0eaea5b015001c9a7071beb7a3c6d97b83e6d11c52742059"
+content-hash = "38bc4259db712a5be5cdea0f4964fba13437cd2b2a05350bbbe9cce5cc9210e3"

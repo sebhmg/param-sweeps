@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "param-sweeps"
-version = "0.1.6"
+version = "0.1.7-alpha.1"
 
 description = "Parameter sweeper for ui.json powered applications"
 authors = ["Mira Geoscience <benjamink@mirageoscience.com>"]
@@ -29,8 +29,8 @@ url = "https://test.pypi.org/simple/"
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11"
-geoh5py = {version = "~0.8.0", allow-prereleases = true}
-#geoh5py = {url = "https://github.com/MiraGeoscience/geoh5py/archive/refs/heads/GEOPY-241.zip#sha256=None"}
+#geoh5py = {version = "~0.8.0", allow-prereleases = true}
+geoh5py = {git = "https://github.com/MiraGeoscience/geoh5py.git", branch = "develop"}
 #geoh5py = {path = "../geoh5py", develop = true}
 
 numpy = "!=1.19.4, ~1.23.5"
