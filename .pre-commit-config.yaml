@@ -10,13 +10,13 @@ ci:
 
 repos:
 -   repo: https://github.com/psf/black
-    rev: 23.9.1
+    rev: 24.3.0
     hooks:
     -   id: black
         types: [text]
         types_or: [python, pyi]
 -   repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
     -   id: isort
         additional_dependencies: [toml] # to read config from pyproject.toml
@@ -29,20 +29,20 @@ repos:
         types: [text]
         types_or: [python, pyi]
 -   repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
+    rev: 7.0.0
     hooks:
     -   id: flake8
         types: [text]
         types_or: [python, pyi]
 -   repo: https://github.com/asottile/pyupgrade
-    rev: v3.13.0
+    rev: v3.15.1
     hooks:
     -   id: pyupgrade
         args: [--py38-plus]
         types: [text]
         types_or: [python, pyi]
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.9.0
     hooks:
     -   id: mypy
         additional_dependencies: [types-toml]
@@ -71,14 +71,14 @@ repos:
         types_or: [python, pyi]
         exclude: ^(devtools/|docs/|setup.py)
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.5
+    rev: v2.2.6
     hooks:
     -   id: codespell
         exclude: (\.ipynb$|^\.github/workflows/issue_to_jira.yml$)
         types: [text]
         types_or: [python, pyi]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: trailing-whitespace
         exclude: \.mdj$
