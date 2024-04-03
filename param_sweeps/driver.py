@@ -12,6 +12,7 @@ import importlib
 import inspect
 import itertools
 import json
+import shutil
 import uuid
 from dataclasses import dataclass
 from inspect import signature
@@ -20,7 +21,6 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from geoh5py.data import Data
 from geoh5py.shared.exceptions import BaseValidationError
 from geoh5py.ui_json import InputFile
 from geoh5py.workspace import Workspace
@@ -156,18 +156,15 @@ class SweepDriver:
                 if trial["status"] != "pending":
                     continue
 
-                filepath = Path(workspace.h5file).parent / f"{name}.ui.geoh5"
-                with Workspace.create(filepath) as iter_workspace:
-                    ifile.data.update(
-                        dict(
-                            {key: val for key, val in trial.items() if key != "status"},
-                            **{"geoh5": iter_workspace},
-                        )
+                iter_h5file = str(Path(workspace.h5file).parent / f"{name}.ui.geoh5")
+                shutil.copy(workspace.h5file, iter_h5file)
+
+                ifile.data.update(
+                    dict(
+                        {key: val for key, val in trial.items() if key != "status"},
+                        **{"geoh5": iter_h5file},
                     )
-                    objects = [v for v in ifile.data.values() if hasattr(v, "uid")]
-                    for obj in objects:
-                        if not isinstance(obj, Data):
-                            obj.copy(parent=iter_workspace, copy_children=True)
+                )
 
                 ifile.name = f"{name}.ui.json"
                 ifile.path = str(Path(workspace.h5file).parent)
