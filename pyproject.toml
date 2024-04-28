@@ -3,15 +3,18 @@ name = "param-sweeps"
 version = "0.1.7-alpha.4"
 
 description = "Parameter sweeper for ui.json powered applications"
-authors = ["Mira Geoscience <benjamink@mirageoscience.com>"]
+license = "MIT"
+authors = ["Mira Geoscience <support@mirageoscience.com>"]
+maintainers = ["Benjamin Kary <benjamink@mirageoscience.com>"]
 repository = "https://github.com/MiraGeoscience/param-sweeps"
-homepage = "https://mirageoscience.com"
+#documentatio  = "https://mirageoscience-param-sweeps.readthedocs-hosted.com/"
+homepage = "https://www.mirageoscience.com/mining-industry-software/python-integration/"
+
 readme = "README.md"
 keywords = ["geology", "geophysics", "earth sciences"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Mathematics",
