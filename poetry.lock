@@ -127,19 +127,18 @@ version = "0.10.0-alpha.1"
 description = "Python API for geoh5, an open file format for geoscientific data"
 optional = false
 python-versions = "^3.9,<3.11"
-files = []
-develop = false
+files = [
+    {file = "develop.zip", hash = "sha256:992f7daa63390220970d47055250cfb9424cbdf61b358175e68b7d426866a8f0"},
+]
 
 [package.dependencies]
-h5py = "^3.2.1"
-numpy = "!=1.19.4, ~1.23.5"
-Pillow = "~10.1.0"
+h5py = ">=3.2.1,<4.0.0"
+numpy = ">=1.23.5,<1.24.0"
+Pillow = ">=10.1.0,<10.2.0"
 
 [package.source]
-type = "git"
-url = "https://github.com/MiraGeoscience/geoh5py.git"
-reference = "develop"
-resolved_reference = "890d647ae92eba047e47820ead98e8d006568f94"
+type = "url"
+url = "https://github.com/MiraGeoscience/geoh5py/archive/refs/heads/develop.zip"
 
 [[package]]
 name = "h5py"
@@ -457,4 +456,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.11"
-content-hash = "47623322e943a2ee64aae5ec28e3cf1b38e63937d51736ea1e4dfb71fd964c5d"
+content-hash = "834ab97f40eba9e9721114270993e3da44aba034274bc6d7d1549effc6c4a0df"
