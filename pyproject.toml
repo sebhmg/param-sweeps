@@ -24,7 +24,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8,<3.11"
+python = "^3.10,<3.11"
 #geoh5py = {version = "~0.8.0", allow-prereleases = true}
 geoh5py = {git = "https://github.com/MiraGeoscience/geoh5py.git", branch = "develop"}
 #geoh5py = {path = "../geoh5py", develop = true}
