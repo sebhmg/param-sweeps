@@ -6,4 +6,4 @@
 #  (see LICENSE file at the root of this source code package).
 
 
-__version__ = "0.1.8"
+__version__ = "0.1.8-alpha.1"
