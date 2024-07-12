@@ -51,7 +51,7 @@ def generate(
 
     sweepfile.data["geoh5"] = ifile.data["geoh5"]
     dirpath = file_path.parent
-    filename = re.sub(".ui.json", "", file_path.name)
+    filename = file_path.name.removesuffix(".ui.json")
     filename = re.sub(r"\._sweep$", "", filename)
     filename = f"{filename}_sweep.ui.json"
 
