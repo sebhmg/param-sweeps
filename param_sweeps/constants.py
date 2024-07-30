@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
+
 default_ui_json: dict[str, Any] = {
     "title": "Parameter sweep",
     "worker_uijson": None,
