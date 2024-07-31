@@ -33,6 +33,10 @@ def generate(
     file_path = Path(worker).resolve(strict=True)
     ifile = InputFile.read_ui_json(file_path)
     sweepfile = InputFile(ui_json=deepcopy(default_ui_json), validate=False)
+
+    if sweepfile.data is None or sweepfile.ui_json is None:
+        raise ValueError("Sweep file data is empty.")
+
     sweepfile.data.update({"worker_uijson": str(worker)})
     if update_values:
         sweepfile.data.update(**update_values)
@@ -47,10 +51,8 @@ def generate(
 
     sweepfile.data["geoh5"] = ifile.data["geoh5"]
     dirpath = file_path.parent
-    filename = file_path.name
-    filename = filename.rstrip("ui.json")
+    filename = file_path.name.removesuffix(".ui.json")
     filename = re.sub(r"\._sweep$", "", filename)
-    # filename = filename.rstrip("_sweep")
     filename = f"{filename}_sweep.ui.json"
 
     print(f"Writing sweep file to: {dirpath / filename}")
