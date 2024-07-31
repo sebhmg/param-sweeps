@@ -129,7 +129,7 @@ class SweepDriver:
         iterations = list(itertools.product(*sets.values()))
         for iteration in iterations:
             param_uuid = SweepDriver.uuid_from_params(iteration)
-            lookup[param_uuid] = dict(zip(sets.keys(), iteration))
+            lookup[param_uuid] = dict(zip(sets.keys(), iteration, strict=False))
             lookup[param_uuid]["status"] = "pending"
 
         lookup = self.update_lookup(lookup, gather_first=True)
