@@ -36,7 +36,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 
 numpy = "~1.26.0"  # also in geoh5py
 
@@ -55,7 +55,7 @@ pytest-cov = "*"
 tomli = "*"
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 ignore = [
