@@ -24,7 +24,7 @@ concurrency:
 jobs:
   call-workflow-static-analysis:
     name: Static analysis
-    uses: MiraGeoscience/CI-tools/.github/workflows/reusable-python-static_analysis.yml@DEVOPS-466
+    uses: MiraGeoscience/CI-tools/.github/workflows/reusable-python-static_analysis.yml@main
     with:
       package-manager: 'poetry'
       app-name: 'param_sweeps'
