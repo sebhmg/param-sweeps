@@ -1,0 +1,5 @@
+version: 1
+type: poetry
+resolver:
+    repo: public-pypi-dev
+    serverId: mirageoscienceltd
