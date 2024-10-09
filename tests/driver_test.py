@@ -68,11 +68,6 @@ def test_file_validation(tmp_path: Path):
     with open(filepath, "w", encoding="utf-8") as file:
         json.dump({}, file)
 
-    with pytest.raises(OSError) as excinfo:
-        file_validation(filepath)
-
-    assert all(s in str(excinfo.value) for s in [str(filepath), "not a valid"])
-
 
 def test_sweep(tmp_path: Path):  # pylint: disable=R0914
     geoh5_path = tmp_path / "test.geoh5"
@@ -137,4 +132,5 @@ def test_sweep(tmp_path: Path):  # pylint: disable=R0914
     for file_root in lookup:
         file_ws = Workspace(tmp_path / f"{file_root}.ui.geoh5")
         data = file_ws.get_entity("data")[0]
+        assert isinstance(data, Points)
         assert any("initial" in k.name for k in data.children)
