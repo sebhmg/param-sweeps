@@ -161,7 +161,7 @@ pydantic = "^2.5.2"
 type = "git"
 url = "https://github.com/MiraGeoscience/geoh5py.git"
 reference = "release/0.10.0"
-resolved_reference = "cfe3b1b1e1ff3caf52a88311cfb7da84f289e35c"
+resolved_reference = "c7b8520dda3e023e29a2c5afa5ab18062f5a589f"
 
 [[package]]
 name = "h5py"
@@ -802,4 +802,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "fa123cdc1f2979755b3af8aa1594b8bed37c2deca200e54bd2af3b070045112c"
+content-hash = "cb48dd4901d2a9507978ab964ddb9f4e5e2e7b7deb3e65202c2848fd752baa52"
