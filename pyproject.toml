@@ -51,6 +51,9 @@ Pygments = "*"
 pylint = "*"
 pytest = "*"
 pytest-cov = "*"
+pyyaml = '*'
+jinja2 = '*'
+packaging = '*'
 tomli = "*"
 
 [tool.ruff]
