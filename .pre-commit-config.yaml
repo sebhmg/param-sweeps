@@ -38,6 +38,7 @@ repos:
             numpy==1.26.*,
             tomli,  # to read config from pyproject.toml
             types-toml,
+            types-PyYAML,
         ]
         exclude: ^docs/
 -   repo: https://github.com/codingjoe/relint
@@ -77,6 +78,7 @@ repos:
         exclude_types: [jupyter]
     -   id: check-toml
     -   id: check-yaml
+        exclude: ^meta.yaml$
 #    -   id: check-added-large-files # crashing on some configuration. To be investigated
     -   id: check-case-conflict
     -   id: check-merge-conflict
