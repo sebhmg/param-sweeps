@@ -161,7 +161,7 @@ pydantic = "^2.5.2"
 type = "git"
 url = "https://github.com/MiraGeoscience/geoh5py.git"
 reference = "release/0.10.0"
-resolved_reference = "c7b8520dda3e023e29a2c5afa5ab18062f5a589f"
+resolved_reference = "682271009d7f94a136f082798f52f722d00534d7"
 
 [[package]]
 name = "h5py"
