@@ -44,7 +44,7 @@ def get_conda_recipe_version():
 def test_version_is_consistent():
     assert param_sweeps.__version__ == get_pyproject_version()
     normalized_conda_version = Version(get_conda_recipe_version())
-    normalized_version = Version(orano_plate_interpreter.__version__)
+    normalized_version = Version(param_sweeps.__version__)
     assert normalized_conda_version == normalized_version
 
 
